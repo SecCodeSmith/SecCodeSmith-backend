@@ -1,0 +1,16 @@
+Django==5.2.1
+djangorestframework==3.16.0
+markdown==3.8
+django-filter==25.1
+
+psycopg2-binary==2.9.10
+
+python-decouple==3.8
+django-cors-headers==4.7.0
+pillow==11.2.1
+django-extensions==4.1
+
+pytest-django>=4.8.0
+# django-debug-toolbar>=4.4.0
+# flake8>=7.0.0
+# black>=24.0.0
