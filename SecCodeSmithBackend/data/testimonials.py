@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-import icons
+from SecCodeSmithBackend.data.icons import Icon
 
 class Testimonial(models.Model):
     """
@@ -26,7 +26,7 @@ class Testimonial(models.Model):
     )
     
     icon_class = models.ForeignKey(
-        icons.Icon,
+        Icon,
         on_delete=models.CASCADE,
         verbose_name=_("Icon"),
         help_text=_("Icon associated with the testimonial (e.g., 'fas fa-quote-left')"),

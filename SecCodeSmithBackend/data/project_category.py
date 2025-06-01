@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-import skill
 
 class ProjectCategory(models.Model):
     """

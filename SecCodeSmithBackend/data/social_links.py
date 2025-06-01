@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-import icons
+from SecCodeSmithBackend.data.icons import Icon
 
 
 class SocialLink(models.Model):
@@ -22,7 +22,7 @@ class SocialLink(models.Model):
     )
 
     icon_class = models.ManyToManyField(
-        icons.Icon,
+        Icon,
         verbose_name=_("Icon"),
         help_text=_("Icon associated with the social link (e.g., 'fab fa-github')"),
         related_name="social_links",
