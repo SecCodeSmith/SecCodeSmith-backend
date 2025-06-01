@@ -28,7 +28,7 @@ class SocialLink(models.Model):
         related_name="social_links",
     )
 
-    footer = model.BooleanField(
+    footer = models.BooleanField(
         default=False,
         verbose_name=_("Footer"),
         help_text=_("Whether to display this link in the footer"),

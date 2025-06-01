@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-import skill
+from icons import Icon
 
 class SkillList(models.Model):
     """
@@ -19,7 +19,7 @@ class SkillList(models.Model):
         help_text=_("CSS class name for the skill list (e.g., 'skill-list')"),
     )
     list_of_skills = models.ManyToManyField(
-        skill.Skill,
+        Icon,
         verbose_name=_("Skills"),
         help_text=_("Skills included in this list (e.g., Python, JavaScript)"),
         related_name="skill_lists",
