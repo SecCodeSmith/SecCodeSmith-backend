@@ -1,9 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from datetime import date
-from datetime import datetime
 
-class Icon(models.Model):
+class Icons(models.Model):
     """
     Model to store icons for portfolio pages
     """

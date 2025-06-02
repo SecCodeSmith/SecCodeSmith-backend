@@ -7,9 +7,7 @@ from django.middleware.csrf import get_token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-
-from SecCodeSmithBackend.data.skills_lists import SkillList
-from SecCodeSmithBackend.data.projects import Project
+from models import SkillList
 
 class CSRFTokenView(APIView):
     permission_classes = [permissions.AllowAny]
