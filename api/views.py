@@ -1,13 +1,10 @@
-import json
-
-from django.contrib.auth import login as log, logout, authenticate
-from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import permissions, status
-from models import SkillList
+from rest_framework.views import APIView
+
+from .models import SkillsCard, IconsClass, Skill
+
 
 class CSRFTokenView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -19,21 +16,26 @@ class CSRFTokenView(APIView):
         csrf_token = get_token(request)
         return JsonResponse({'csrfToken': csrf_token}, status=status.HTTP_200_OK)
 
-class GetSkillListsView(APIView):
+class SkillCards(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """
-        Returns all skill lists.
+        Returns a list of all available skills card.
         """
-        skill_lists = SkillList.objects.all()
+
+        card = SkillsCard.objects.all()
+
         data = [
             {
-                'id': skill_list.id,
-                'name': skill_list.list_name,
-                'className': skill_list.class_name,
-                'skills': [skill.name for skill in skill_list.list_of_skills.all()]
+                'categoryTitle': card.category_title,
+                'categoryIcon': IconsClass.objects.get(pk=card.icon_class).class_name,
+                'skills': [{
+                    'name': skill.skill_name,
+                    'icon': IconsClass.objects.get(pk=skill.class_name).class_name
+                } for skill in Skill.objects.filter(SkillsCard=card)]
             }
-            for skill_list in skill_lists
+            for card in card
         ]
-        return JsonResponse(data, safe=False, status=status.HTTP_200_OK)
+
+        return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
