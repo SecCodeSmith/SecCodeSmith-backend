@@ -2,9 +2,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-from SecCodeSmithBackend.data.icons import Icon
+from .icons import Icons
 
-class SkillList(models.Model):
+class Skill(models.Model):
     """
     Model to store skill lists for portfolio pages
     """
@@ -19,7 +19,7 @@ class SkillList(models.Model):
         help_text=_("CSS class name for the skill list (e.g., 'skill-list')"),
     )
     list_of_skills = models.ManyToManyField(
-        Icon,
+        Icons,
         verbose_name=_("Skills"),
         help_text=_("Skills included in this list (e.g., Python, JavaScript)"),
         related_name="skill_lists",
@@ -28,7 +28,7 @@ class SkillList(models.Model):
     class Meta:
         verbose_name = _("Skill List")
         verbose_name_plural = _("Skill Lists")
-        ordering = ["name"]
+        ordering = ["list_name"]
 
     def __str__(self):
-        return self.name
+        return self.list_name

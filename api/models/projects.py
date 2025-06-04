@@ -2,8 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
-from SecCodeSmithBackend.data.icons import Icon
-from SecCodeSmithBackend.data.project_category import ProjectCategory
+from .icons import Icons
+from .project_category import ProjectCategory
 
 
 class ProjectDetails(models.Model):
@@ -18,7 +18,7 @@ class ProjectDetails(models.Model):
     client = models.CharField(max_length=100, null=True, blank=True)
     keyFeatures = models.JSONField(null=True, blank=True) 
     gallery = models.JSONField(null=True, blank=True) 
-    fullTechStack = models.ManyToManyField(Icon, blank=True)
+    fullTechStack = models.ManyToManyField(Icons, blank=True)
 
     @property
     def dateFormatted(self):
@@ -41,7 +41,7 @@ class Project(models.Model):
     image = models.ImageField(upload_to='project_images/')
     category = models.ManyToManyField(ProjectCategory)
     featured = models.BooleanField(default=False)
-    technologies = models.ManyToManyField(Icon)
+    technologies = models.ManyToManyField(Icons)
     githubLink = models.URLField(null=True, blank=True)
     demoLink = models.URLField(null=True, blank=True)
     documentationLink = models.URLField(null=True, blank=True)
