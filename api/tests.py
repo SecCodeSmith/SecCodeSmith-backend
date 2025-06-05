@@ -31,12 +31,12 @@ class APITests(TestCase):
         self.card.skills.add(self.skill)
 
     def test_csrf_token_view(self):
-        response = self.client.get("/csrf-token/")
+        response = self.client.get("/api/csrf")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("csrfToken", response.json())
 
     def test_skill_cards_view(self):
-        response = self.client.get("/skills/")
+        response = self.client.get("/api/skills-cards")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertEqual(len(data), 1)

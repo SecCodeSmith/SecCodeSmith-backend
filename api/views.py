@@ -7,7 +7,7 @@ from .models import SkillsCard, IconsClass, Skill
 
 
 class CSRFTokenView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
         """
@@ -17,7 +17,7 @@ class CSRFTokenView(APIView):
         return JsonResponse({'csrfToken': csrf_token}, status=status.HTTP_200_OK)
 
 class SkillCards(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request):
         """
