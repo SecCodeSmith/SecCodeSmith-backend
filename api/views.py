@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.templatetags.i18n import language
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 
-from .models import SkillsCard, IconsClass, Skill
+from .models import *
 
 
 class CSRFTokenView(APIView):
@@ -29,13 +30,46 @@ class SkillCards(APIView):
         data = [
             {
                 'categoryTitle': card.category_title,
-                'categoryIcon': IconsClass.objects.get(pk=card.icon_class).class_name,
+                'categoryIcon': card.icon_class.class_name,
                 'skills': [{
                     'name': skill.name,
-                    'icon': skill.icon_class,
-                } for skill in Skill.objects.filter(SkillsCard=card)]
+                    'icon': skill.icon_class.class_name,
+                } for skill in card.skills.all()]
             }
             for card in card
         ]
 
         return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
+
+class AboutPage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        """
+        Returns an About section of the website in specified language.
+        """
+        lang = request.lang | Lang.objects.first()
+        about = About.objects.get(language=lang)
+
+        data = {
+            'title': about.about_title,
+            'text': about.about_text,
+            'language': lang.name,
+            'professional_journal': [
+                {
+                    'title': about.professional_journal_title,
+                    'description': about.about_text,
+                    'duration': item.duration
+                } for item in about.professional_journey.all()
+            ],
+            'technical_arsenal': [
+                {
+                    'icon': item.icon_class.class_name,
+                    'title': item.title,
+                    'skills': [
+                       skill.name for skill in item.skills.all()
+                    ]
+                } for item in about.technical_arsenal.all()
+            ]
+        }
+
