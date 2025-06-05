@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from datetime import date
 from datetime import datetime
 from .icons_class import IconsClass
-from .skills_card import SkillsCard
 
 class Skill(models.Model):
     """
@@ -19,12 +18,6 @@ class Skill(models.Model):
                                    related_name='skills',
                                    on_delete=models.SET_NULL,
                                    null=True)
-
-    skill_card = models.ForeignKey(SkillsCard,
-                                   on_delete=models.CASCADE,
-                                   verbose_name=_("Skill Card"),
-                                   null=True)
-
 
     class Meta:
         verbose_name = _("Skill List")

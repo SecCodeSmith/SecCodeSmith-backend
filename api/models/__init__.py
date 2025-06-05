@@ -3,3 +3,7 @@ from .skill import Skill
 from .skills_card import SkillsCard
 from .contact import Contact
 from .lang import Lang
+from .core_values import CoreValue
+from .professional_journey import ProfessionalJourney
+from .technical_arsenal import TechnicalArsenal
+from .technical_arsenal_skill import TechnicalArsenalSkill

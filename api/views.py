@@ -31,8 +31,8 @@ class SkillCards(APIView):
                 'categoryTitle': card.category_title,
                 'categoryIcon': IconsClass.objects.get(pk=card.icon_class).class_name,
                 'skills': [{
-                    'name': skill.skill_name,
-                    'icon': IconsClass.objects.get(pk=skill.class_name).class_name
+                    'name': skill.name,
+                    'icon': skill.icon_class,
                 } for skill in Skill.objects.filter(SkillsCard=card)]
             }
             for card in card
