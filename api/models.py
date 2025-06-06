@@ -134,23 +134,31 @@ class ProfessionalJourney(models.Model):
     def __str__(self):
         return self.title
 
+class TechnicalArsenalSkill(models.Model):
+    text = models.TextField(_('Technical Arsenal Skill'))
+    class Meta:
+        verbose_name = _('Technical Arsenal Skill')
+
+    def __str__(self):
+        return self.text
+
 class TechnicalArsenal(models.Model):
     """"
     Model for Technical Arsenal
     """
     icon = models.ForeignKey(IconsClass, on_delete=models.CASCADE)
     title = models.CharField(_("Technical Arsenal Title"), max_length=100)
-    skills = models.ManyToManyField(Skill, verbose_name=_("Skills"), blank=True)
+    skills = models.ManyToManyField(TechnicalArsenalSkill, verbose_name=_("Skills"), blank=True)
 
-class TechnicalArsenalSkill(models.Model):
-    text = models.TextField(_('Technical Arsenal Skill'))
-    technical_arsenal = models.ForeignKey(TechnicalArsenal, on_delete=models.CASCADE)
+class Testimonials(models.Model):
+    """
+    Model for Testimonials
+    """
+    author = models.CharField(_("Author"), max_length=100)
+    email = models.EmailField(_("Email"), max_length=100)
+    position = models.CharField(_("Position"), max_length=100)
+    text = models.TextField(_("Text"))
 
-    class Meta:
-        verbose_name = _('Technical Arsenal Skill')
-
-    def __str__(self):
-        return self.text
 
 class About(models.Model):
     """
@@ -160,9 +168,11 @@ class About(models.Model):
     about_text = models.TextField(_("About Text"))
     lang = models.ForeignKey(Lang,
                              on_delete=models.CASCADE,
-                             related_name='about_lang', )
+                             related_name='about_lang', unique=True)
     professional_journey = models.ManyToManyField(ProfessionalJourney, related_name='about_professional_journey')
     technical_arsenal = models.ManyToManyField(TechnicalArsenal, related_name='about_technical_arsenal')
+    core_value = models.ManyToManyField(CoreValue, related_name='about_core_value')
+    testimonials = models.ManyToManyField(Testimonials, related_name='about_testimonials')
 
     class Meta:
         verbose_name = _('About')

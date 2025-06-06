@@ -27,6 +27,9 @@ class SkillCards(APIView):
 
         card = SkillsCard.objects.all()
 
+        if not card:
+            return JsonResponse({'error': 'No card found'}, status=status.HTTP_404_NOT_FOUND)
+
         data = [
             {
                 'categoryTitle': card.category_title,
@@ -44,32 +47,52 @@ class SkillCards(APIView):
 class AboutPage(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request):
+    def get(self, request, lang = None):
         """
         Returns an About section of the website in specified language.
         """
-        lang = request.lang | Lang.objects.first()
-        about = About.objects.get(language=lang)
+        lang = Lang.objects.get(iso_code=lang) or Lang.objects.first()
+
+        about = About.objects.get(lang=lang)
+
+        if not about:
+            return JsonResponse({'error': 'About in lang {} not found'.format(lang.name)}
+                                , status=status.HTTP_404_NOT_FOUND)
 
         data = {
             'title': about.about_title,
             'text': about.about_text,
-            'language': lang.name,
+            'language': lang.name or "",
             'professional_journal': [
                 {
-                    'title': about.professional_journal_title,
-                    'description': about.about_text,
+                    'title': item.title,
+                    'description': item.description,
                     'duration': item.duration
                 } for item in about.professional_journey.all()
             ],
             'technical_arsenal': [
                 {
-                    'icon': item.icon_class.class_name,
+                    'icon': item.icon.class_name,
                     'title': item.title,
                     'skills': [
-                       skill.name for skill in item.skills.all()
+                       skill.text for skill in item.skills.all()
                     ]
                 } for item in about.technical_arsenal.all()
+            ],
+            'core_values': [
+                {
+                    'title': value.title,
+                    'icon': value.icon.class_name,
+                    'descriptions': value.description,
+                } for value in about.core_value.all()
+            ],
+            'testimonials': [
+                {
+                    'autor': testimonial.autor,
+                    'position': testimonial.position,
+                    'text': testimonial.text,
+                } for testimonial in about.testimonials.all()
             ]
         }
 
+        return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
