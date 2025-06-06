@@ -1,10 +1,11 @@
 import json
+from datetime import datetime
 
 from django.test import TestCase
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from rest_framework import status
 from api.models import *
-from api.views import CSRFTokenView, AboutPage, SkillCards
+from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
 
 
 class ModelTests(TestCase):
@@ -56,7 +57,8 @@ class ModelTests(TestCase):
         self.prof_journey = ProfessionalJourney.objects.create(
             title="Backend Developer",
             company="Acme Corp",
-            duration="2018–2021",
+            start_date=datetime.strptime("1-2018" ,"%m-%Y"),
+            end_date=datetime.strptime("1-2021" ,"%m-%Y"),
             description="Worked on REST APIs."
         )
 
@@ -89,6 +91,45 @@ class ModelTests(TestCase):
             answer="Use email.",
             contact=self.contact
         )
+
+        self.link_a = SocialLinks.objects.create(
+            name="Alpha",
+            url="https://alpha.example.com",
+            footer=True,
+            contact_pages=False,
+            about_pages=True,
+            icon_class=self.icon_github
+        )
+
+        self.link_b = SocialLinks.objects.create(
+            name="Beta",
+            url="https://beta.example.com",
+            footer=False,
+            contact_pages=True,
+            about_pages=False,
+            icon_class=self.icon_linkedin
+        )
+
+    def test_str_returns_name(self):
+        self.assertEqual(str(self.link_a), "Alpha")
+        self.assertEqual(str(self.link_b), "Beta")
+
+    def test_ordering_by_name(self):
+        links = list(SocialLinks.objects.all())
+        self.assertEqual(links[0].name, "Alpha")
+        self.assertEqual(links[1].name, "Beta")
+
+    def test_icon_class_relationship(self):
+        self.assertEqual(self.link_a.icon_class, self.icon_github)
+        self.assertEqual(self.link_b.icon_class, self.icon_linkedin)
+
+    def test_boolean_fields(self):
+        self.assertTrue(self.link_a.footer)
+        self.assertFalse(self.link_a.contact_pages)
+        self.assertTrue(self.link_a.about_pages)
+        self.assertFalse(self.link_b.footer)
+        self.assertTrue(self.link_b.contact_pages)
+        self.assertFalse(self.link_b.about_pages)
 
     def test_iconsclass_str_and_fields(self):
         self.assertEqual(str(self.icon_github), "fab fa-github")
@@ -128,7 +169,7 @@ class ModelTests(TestCase):
     def test_professionaljourney_str_and_fields(self):
         self.assertEqual(str(self.prof_journey), "Backend Developer")
         self.assertEqual(self.prof_journey.company, "Acme Corp")
-        self.assertEqual(self.prof_journey.duration, "2018–2021")
+        self.assertEqual(self.prof_journey.duration, "01.2018-01.2021")
         self.assertIn("REST APIs", self.prof_journey.description)
 
     def test_technicalarsenalskill_str(self):
@@ -284,7 +325,8 @@ class AboutPageViewTests(APITestCase):
         self.prof_journey = ProfessionalJourney.objects.create(
             title="Backend Developer",
             company="Acme Corp",
-            duration="2018–2021",
+            start_date=datetime.strptime("01-2018" ,"%m-%Y"),
+            end_date=datetime.strptime("01-2021", "%m-%Y"),
             description="Built REST APIs",
         )
 
@@ -362,6 +404,7 @@ class AboutPageViewTests(APITestCase):
             "technical_arsenal",
             "core_values",
             "testimonials",
+            "about_social_links",
         }
         self.assertEqual(set(payload.keys()), expected_top_keys)
 
@@ -404,6 +447,50 @@ class AboutPageViewTests(APITestCase):
             self.assertEqual(tst_item["position"], self.testimonial.position)
             self.assertEqual(tst_item["text"], self.testimonial.text)
 
+
+class FooterLinksViewTests(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = SocialLinksFooter.as_view()
+        self.url = '/api/footer-links/'
+        self.icon_LinkedIn = IconsClass.objects.create(
+            class_name="LinkedIn",
+            name="LinkedIn",
+        )
+
+        self.icon_github = IconsClass.objects.create(
+            class_name="Github",
+            name="Github",
+        )
+
+        self.link_1 = SocialLinks.objects.create(
+            name="LinkedIn",
+            url="https://www.linkedin.com/in/linkedin/",
+            icon_class=self.icon_LinkedIn,
+            footer=True,
+            contact_pages=False,
+            about_pages=False,
+        )
+
+        self.link_2 = SocialLinks.objects.create(
+            name="Github",
+            url="https://www.github.com",
+            footer=False,
+            contact_pages=False,
+            about_pages=False,
+        )
+
+    def test_footer_links(self):
+        request = self.factory.get(self.url)
+
+        response = self.view(request)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        payload = json.loads(response.text)
+
+        self.assertEqual(len(payload), 1)
+        self.assertEqual(payload[0]["icon"], self.link_1.icon_class.class_name)
+        self.assertEqual(payload[0]["url"], self.link_1.url)
 
 
 class APITests(TestCase):

@@ -47,16 +47,20 @@ class SkillCards(APIView):
 class AboutPage(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request, lang = None):
+    def get(self, request, lang_arg = None):
         """
         Returns an About section of the website in specified language.
         """
-        lang = Lang.objects.get(iso_code=lang) or Lang.objects.first()
 
-        about = About.objects.get(lang=lang)
+        try:
+            lang = Lang.objects.get(iso_code=lang_arg)
+        except Lang.DoesNotExist:
+            lang = Lang.objects.first()
 
-        if not about:
-            return JsonResponse({'error': 'About in lang {} not found'.format(lang.name)}
+        try:
+            about = About.objects.get(lang=lang)
+        except About.DoesNotExist:
+            return JsonResponse({'error': 'About in lang {} not found'.format(lang.name or lang_arg)}
                                 , status=status.HTTP_404_NOT_FOUND)
 
         data = {
@@ -88,11 +92,36 @@ class AboutPage(APIView):
             ],
             'testimonials': [
                 {
-                    'autor': testimonial.autor,
+                    'author': testimonial.author,
                     'position': testimonial.position,
                     'text': testimonial.text,
                 } for testimonial in about.testimonials.all()
+            ],
+            'about_social_links': [
+                {
+                    'icon': link.icon_class.class_name,
+                    'title': link.name,
+                    'url': link.url
+                } for link in SocialLinks.objects
+                .filter(about_pages=True).all()
             ]
         }
+
+        return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
+
+class SocialLinksFooter(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request):
+        socials = SocialLinks.objects.filter(footer=True).all()
+
+        if not socials or len(socials) == 0:
+            return JsonResponse({'error': 'No social links found'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = [
+            {
+                'icon': social.icon_class.class_name,
+                'url': social.url
+            } for social in socials
+        ]
 
         return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
