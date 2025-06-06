@@ -5,17 +5,7 @@ from .models import Image
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ("thumbnail", "name", "alt")
+    list_display = ("image_tag","image", "name", "alt")
     search_fields = ("name", "alt")
-    readonly_fields = ("thumbnail",)
+    readonly_fields = ("image_tag",)
 
-    def thumbnail(self, obj):
-        if obj.image:
-            return format_html(
-                '<img src="{}" style="width:60px;height:60px;border-radius:4px;" alt="{}">',
-                obj.image.url,
-                obj.alt or "",
-            )
-        return "—"
-
-    thumbnail.short_description = "Preview"

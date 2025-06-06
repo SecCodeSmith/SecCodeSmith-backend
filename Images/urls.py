@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import *
+from Images.views import *
 
 app_name = "core"
 
 urlpatterns = [
-    path("Image/", ImageProps.as_view(), name="image_list"),
+    path("Image/<str:name>/", ImageProps.as_view(), name="image_list"),
 ]

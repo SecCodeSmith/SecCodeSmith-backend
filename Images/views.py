@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -7,7 +7,11 @@ from .models import Image
 
 
 class ImageProps(APIView):
+
+    permission_classes = (permissions.AllowAny,)
     def get(self, request, name=None):
+        if not name:
+            return Response({'error': 'Name is required'}, status=status.HTTP_400_BAD_REQUEST)
         data = {}
         try:
             image = Image.objects.get(name=name)
