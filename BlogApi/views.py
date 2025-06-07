@@ -2,6 +2,7 @@ import json
 from datetime import timezone
 
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.views import APIView
 
@@ -46,9 +47,9 @@ class PostViews(APIView):
             return JsonResponse(data,status=status.HTTP_200_OK)
 
 class PostPagesCount(APIView):
-    def get(self, request):
+    def get(self, request, post_per_page=6):
         try:
-            count = Post.objects.filter(published_at__gte=timezone.now()).count()
+            count = Post.objects.filter(published_at__gte=timezone.now()).count() / post_per_page
 
             return JsonResponse({'count': count},status=status.HTTP_200_OK)
 
@@ -56,25 +57,29 @@ class PostPagesCount(APIView):
             return JsonResponse({'error':'Post not found'},)
 
 class PostPageView(APIView):
-    def get(self, request, page_nuber=None, post_per_pages=6, filter = None):
+    def get(self, request, page_number=1):
+
+        per_page = request.GET.get('per_page', 6)
+        filt_json = request.GET.get('filter')
+
         data = {}
         try:
             posts = Post.objects.order_by('-published_at').all()
-            if filter:
-                filter = json.loads(filter)
+            if filt_json:
+                filt_json = json.loads(filt_json)
 
-                if 'title' in filter:
-                    posts = posts.filter(title__icontains=filter['title'])
-                if 'tags' in filter:
-                    posts = posts.filter(tags__slug=filter['tags'])
-                if 'category' in filter:
-                    posts = posts.filter(category__slug=filter['category'])
+                if 'title' in filt_json:
+                    posts = posts.filter(title__icontains=filt_json['title'])
+                if 'tags' in filt_json:
+                    posts = posts.filter(tags__slug=filt_json['tags'])
+                if 'category' in filt_json:
+                    posts = posts.filter(category__slug=filt_json['category'])
 
 
-            page = posts[(post_per_pages * (page_nuber - 1)):(post_per_pages * page_nuber)]
+            page = posts[(per_page * (page_number - 1)):(per_page * page_number)]
 
             data = {
-                'page': page_nuber,
+                'page': page_number,
                 'posts': [
                     {
                         'title': post.title,
@@ -87,9 +92,11 @@ class PostPageView(APIView):
                     for post in page
                 ]
             }
-
+            return JsonResponse(data, status=status.HTTP_200_OK)
         except Post.DoesNotExist:
             return JsonResponse({'error':'Post not found'},status=status.HTTP_404_NOT_FOUND)
-
-        finally:
-            return JsonResponse(data,status=status.HTTP_200_OK)
+        except ValueError:
+            return JsonResponse(
+                {'error': 'Invalid JSON in filter param'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

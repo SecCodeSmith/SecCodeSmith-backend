@@ -23,7 +23,7 @@ class ImagePropsTests(APITestCase):
             image=self.sample_file
         )
         # Helper to build detail URLs
-        self.detail_url = lambda name: reverse('core:image_list', kwargs={'name': name})
+        self.detail_url = lambda name: reverse('image:image_list', kwargs={'name': name})
 
     def test_existing_image_returns_props(self):
         url = self.detail_url(self.image.name)

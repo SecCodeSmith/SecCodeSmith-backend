@@ -1,11 +1,17 @@
 # tests/test_models.py
+import json
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase, APIRequestFactory
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from BlogApi.models import Author, Category, Tag, Post, Comment
+from Images.models import Image
 
 
 class AuthorModelTests(TestCase):
@@ -247,4 +253,76 @@ class CommentModelTests(TestCase):
         self.assertEqual(comment.email, "emily@example.com")
         self.assertEqual(comment.content, "Hello world!")
         self.assertEqual(comment.post, self.post)
+
+class BlogApiPageTests(APITestCase):
+    def setUp(self):
+        self.sample_file = SimpleUploadedFile(
+            name='test.jpg',
+            content=b'file_content',
+            content_type='image/jpeg'
+        )
+        # Create valid Image entry
+        self.image = Image.objects.create(
+            name='existing',
+            alt='An existing image',
+            image=self.sample_file
+        )
+        # Create Authors
+        self.author = Author.objects.create(
+            name="Commenter Author",
+            email="commenter@example.com",
+            bio="This is a test comment.",
+            avatar=self.sample_file
+        )
+        self.second_author = Author.objects.create(
+            name="Second Author",
+            email="second@example.com",
+            bio="This is a second test comment.",
+            avatar=self.sample_file
+        )
+        # Dates for posts
+        self.sample_date = datetime.strptime("01-01-2000", "%d-%m-%Y")
+        self.future_date = datetime.now() + timedelta(days=1)
+        # Category
+        self.category = Category.objects.create(title="Comments Category")
+        # Generate 12 Posts
+        self.posts = []
+        for i in range(12):
+            post = Post.objects.create(
+                title=f"Test Post {i}",
+                excerpt="Excerpt.",
+                image="",
+                category=self.category,
+                published_at=self.sample_date if i < 6 else self.future_date,
+                author=self.author if i % 2 == 0 else self.second_author,
+                content="Content for post {}.".format(i),
+                read_time="1 min read",
+                featured=(i % 3 == 0),
+                slug=f"test-slug-{i}",
+            )
+            self.posts.append(post)
+
+
+        self.posts_count = lambda count_post_on_page: \
+            reverse('BlogApi:post_page_count',
+                    kwargs={'post_per_page': count_post_on_page})
+
+        self.post_page = lambda page: reverse('BlogApi:post-page',
+                                              kwargs={'page_number': page})
+
+    def test_posts_count(self):
+        url = self.posts_count(2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.text)
+        self.assertIn('count', payload)
+        self.assertEqual(payload['count'], 3)
+
+    def test_posts_page(self):
+        url = self.post_page(1)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        url = self.post_page(2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 

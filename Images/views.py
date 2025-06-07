@@ -12,7 +12,6 @@ class ImageProps(APIView):
     def get(self, request, name=None):
         if not name:
             return Response({'error': 'Name is required'}, status=status.HTTP_400_BAD_REQUEST)
-        data = {}
         try:
             image = Image.objects.get(name=name)
 
