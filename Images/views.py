@@ -22,11 +22,11 @@ class ImageProps(APIView):
                 'alt': image.alt
             }
 
+            return Response(data, status=status.HTTP_200_OK)
+
         except Image.DoesNotExist:
             return JsonResponse({'error': 'Image not found'} ,status=status.HTTP_404_NOT_FOUND)
         except Image.MultipleObjectsReturned:
             return JsonResponse({'error': 'Problem with database'} ,status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return JsonResponse({'error': e} ,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        finally:
-            return Response(data, status=status.HTTP_200_OK)

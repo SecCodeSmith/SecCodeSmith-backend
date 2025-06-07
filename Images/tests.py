@@ -1,30 +1,53 @@
-import tempfile
+import json
+
 from django.urls import reverse
-from django.test import override_settings
+from rest_framework import status
 from rest_framework.test import APITestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest import mock
 
-from .models import Image
+from Images.models import Image
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class ImageAPITests(APITestCase):
+class ImagePropsTests(APITestCase):
     def setUp(self):
-        # create a dummy image so the endpoint has something to serve
-        img_file = SimpleUploadedFile(
-            "dummy.png", b"\x89PNG\r\n\x1a\n", content_type="image/png"
+        # Create a sample image file
+        self.sample_file = SimpleUploadedFile(
+            name='test.jpg',
+            content=b'file_content',
+            content_type='image/jpeg'
         )
+        # Create a valid image entry
         self.image = Image.objects.create(
-            name="guild-alpha", alt="Guild crest", image=img_file
+            name='existing',
+            alt='An existing image',
+            image=self.sample_file
         )
+        # Helper to build detail URLs
+        self.detail_url = lambda name: reverse('core:image_list', kwargs={'name': name})
 
-    def test_get_image_success(self):
-        url = reverse("core:image_detail", args=[self.image.name])
-        r = self.client.get(url)
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data["name"], self.image.name)
-        self.assertTrue(r.data["image"].endswith("dummy.png"))
+    def test_existing_image_returns_props(self):
+        url = self.detail_url(self.image.name)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('image', response.data)
+        self.assertIn('name', response.data)
+        self.assertIn('alt', response.data)
+        self.assertEqual(response.data['name'], self.image.name)
+        self.assertEqual(response.data['alt'], self.image.alt)
 
-    def test_get_image_not_found(self):
-        url = reverse("core:image_detail", args=["does-not-exist"])
-        r = self.client.get(url)
-        self.assertEqual(r.status_code, 404)
+    def test_nonexistent_image_returns_404(self):
+        url = self.detail_url('missing')
+        response = self.client.get(url)
+        payload = json.loads(response.text)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(payload, {'error': 'Image not found'})
+
+    def test_multiple_objects_returns_400(self):
+        # Create duplicates to trigger MultipleObjectsReturned
+        Image.objects.create(name='dup', alt='First', image=self.sample_file)
+        Image.objects.create(name='dup', alt='Second', image=self.sample_file)
+        url = self.detail_url('dup')
+        response = self.client.get(url)
+        payload = json.loads(response.text)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(payload, {'error': 'Problem with database'})

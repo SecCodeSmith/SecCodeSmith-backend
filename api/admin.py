@@ -44,7 +44,6 @@ class SocialLinksAdmin(admin.ModelAdmin):
     )
     list_filter = ("footer", "contact_pages", "about_pages")
     search_fields = ("name", "url")
-    autocomplete_fields = ("icon_class",)
 
 
 @admin.register(Contact)

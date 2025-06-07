@@ -59,17 +59,6 @@ class Tag(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-class PostGalleryImage(models.Model):
-    alt = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
-    image = models.ImageField(
-        upload_to='post_galleries/',
-        null=True,
-        blank=True,
-    )
 
 class Post(models.Model):
     """
@@ -110,7 +99,9 @@ class Post(models.Model):
     )
     published_at = models.DateTimeField(
         db_index=True,
-        help_text="When the post was (or will be) published."
+        help_text="When the post was (or will be) published.",
+        null=True,
+        blank=True
     )
     author = models.ForeignKey(
         Author,
@@ -132,13 +123,6 @@ class Post(models.Model):
         blank=True
     )
     content = models.TextField(help_text="Full HTML or Markdown content of the post.")
-
-    post_gallery_images = models.ManyToManyField(
-        PostGalleryImage,
-        related_name="posts",
-        blank=True,
-        help_text="PostGalleryImages related to this post."
-    )
 
     class Meta:
         ordering = ["-published_at"]
