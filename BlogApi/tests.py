@@ -371,4 +371,17 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
         self.assertIn('count', payload)
         self.assertEqual(payload['count'], 0)
 
-    
+    def test_no_posts_page(self):
+        url = self.post_page(1)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertIn('page', payload)
+        self.assertIn('posts', payload)
+        self.assertEqual(payload['page'], 1)
+        self.assertEqual(len(payload['posts']), 0)
+
+    def test_no_posts_pages(self):
+        url = self.post_view_page("test")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
