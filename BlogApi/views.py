@@ -28,23 +28,18 @@ class PostViews(APIView):
                 'title': post.title,
                 'excerpt': post.excerpt,
                 'image': post.image,
-                'category': post.category,
-                'date': post.published_at,
+                'category': post.category.title,
+                'date': post.published_at.strftime('%d-%m-%Y'),
                 'author': {
                     'name': post.author.name,
-                    'email': post.author.email,
                     'bio': post.author.bio,
                     'avatar': post.author.avatar.url,
                 },
-
             }
-
+            return JsonResponse(data, status=status.HTTP_200_OK)
         except Post.DoesNotExist:
             return JsonResponse({'error':'Post not found'},
                                 status=status.HTTP_404_NOT_FOUND)
-
-        finally:
-            return JsonResponse(data,status=status.HTTP_200_OK)
 
 class PostPagesCount(APIView):
     def get(self, request, post_per_page=6):
@@ -54,7 +49,7 @@ class PostPagesCount(APIView):
             return JsonResponse({'count': count},status=status.HTTP_200_OK)
 
         except Post.DoesNotExist:
-            return JsonResponse({'error':'Post not found'},)
+            return JsonResponse({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class PostPageView(APIView):
     def get(self, request, page_number=1):
@@ -62,9 +57,10 @@ class PostPageView(APIView):
         per_page = request.GET.get('per_page', 6)
         filt_json = request.GET.get('filter')
 
-        data = {}
         try:
-            posts = Post.objects.order_by('-published_at').all()
+            posts = (Post.objects.
+                    filter(published_at__gte=timezone.now()).
+                     order_by('-published_at').all())
             if filt_json:
                 filt_json = json.loads(filt_json)
 
@@ -84,10 +80,10 @@ class PostPageView(APIView):
                     {
                         'title': post.title,
                         'author': post.author.name,
-                        'publish_at': post.published_at.isoformat("%d-%m-%Y"),
+                        'publish_at': post.published_at.strftime("%d-%m-%Y"),
                         'comments': post.comment_count,
                         'tags': [ tag.name for tag in post.tags.all()],
-                        'category': post.category,
+                        'category': post.category.title,
                     }
                     for post in page
                 ]

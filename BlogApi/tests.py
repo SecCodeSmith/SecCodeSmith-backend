@@ -310,6 +310,9 @@ class BlogApiPageTests(APITestCase):
         self.post_page = lambda page: reverse('BlogApi:post-page',
                                               kwargs={'page_number': page})
 
+        self.post_view_page = lambda slug: reverse('BlogApi:post',
+                                                   kwargs={'slug': slug})
+
     def test_posts_count(self):
         url = self.posts_count(2)
         response = self.client.get(url)
@@ -322,7 +325,50 @@ class BlogApiPageTests(APITestCase):
         url = self.post_page(1)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.text)
+        self.assertIn('page', payload)
+        self.assertIn('posts', payload)
+        self.assertEqual(payload['page'], 1)
+        self.assertEqual(len(payload['posts']), 6)
         url = self.post_page(2)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.text)
+        self.assertIn('page', payload)
+        self.assertIn('posts', payload)
+        self.assertEqual(payload['page'], 2)
+        self.assertEqual(len(payload['posts']), 0)
 
+    def test_posts_pages(self):
+        for page in self.posts:
+            url = self.post_view_page(page.slug)
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            payload = json.loads(response.content)
+            self.assertIn('id', payload)
+            self.assertEqual(payload['id'], page.id)
+            self.assertIn('slug', payload)
+            self.assertEqual(payload['slug'], page.slug)
+            self.assertEqual(len(payload), 8)
+        
+class BlogApiPageEmptyDatabaseTests(APITestCase):
+    def setUp(self):
+        self.posts_count = lambda count_post_on_page: \
+            reverse('BlogApi:post_page_count',
+                    kwargs={'post_per_page': count_post_on_page})
+
+        self.post_page = lambda page: reverse('BlogApi:post-page',
+                                              kwargs={'page_number': page})
+
+        self.post_view_page = lambda slug: reverse('BlogApi:post',
+                                                   kwargs={'slug': slug})
+
+    def test_no_posts_count(self):
+        url = self.posts_count(2)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.text)
+        self.assertIn('count', payload)
+        self.assertEqual(payload['count'], 0)
+
+    
