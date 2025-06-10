@@ -25,6 +25,12 @@ class ImagePropsTests(APITestCase):
         # Helper to build detail URLs
         self.detail_url = lambda name: reverse('image:image_list', kwargs={'name': name})
 
+    def tearDown(self):
+        self.image.image.delete(save=False)
+        self.image.delete()
+
+
+
     def test_existing_image_returns_props(self):
         url = self.detail_url(self.image.name)
         response = self.client.get(url)
@@ -44,10 +50,15 @@ class ImagePropsTests(APITestCase):
 
     def test_multiple_objects_returns_400(self):
         # Create duplicates to trigger MultipleObjectsReturned
-        Image.objects.create(name='dup', alt='First', image=self.sample_file)
-        Image.objects.create(name='dup', alt='Second', image=self.sample_file)
+        img1 = Image.objects.create(name='dup', alt='First', image=self.sample_file)
+        img2 = Image.objects.create(name='dup', alt='Second', image=self.sample_file)
         url = self.detail_url('dup')
         response = self.client.get(url)
         payload = json.loads(response.text)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(payload, {'error': 'Problem with database'})
+
+        img1.image.delete(save=False)
+        img2.image.delete(save=False)
+        img1.delete()
+        img2.delete()

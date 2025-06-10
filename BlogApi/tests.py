@@ -23,6 +23,8 @@ class AuthorModelTests(TestCase):
         )
         self.assertEqual(str(author), "Jane Doe")
 
+        author.avatar.delete(save=False)
+
     def test_author_fields(self):
         author = Author.objects.create(
             name="John Smith",
@@ -32,6 +34,8 @@ class AuthorModelTests(TestCase):
         self.assertEqual(author.name, "John Smith")
         self.assertEqual(author.email, "john@example.com")
         self.assertEqual(author.bio, "")
+
+        author.avatar.delete(save=False)
 
 
 class CategoryModelTests(TestCase):
@@ -79,6 +83,9 @@ class PostModelTests(TestCase):
             email="alice@example.com"
         )
         self.category = Category.objects.create(title="Tech News")
+
+    def tearDown(self):
+        self.author.avatar.delete(save=False)
 
     def test_post_str_and_slug_auto_generation(self):
         title = "My First Post"
@@ -224,6 +231,9 @@ class CommentModelTests(TestCase):
             content="Content."
         )
 
+    def tearDown(self):
+        self.author.avatar.delete(save=False)
+
     def test_comment_str(self):
         comment = Comment.objects.create(
             post=self.post,
@@ -261,13 +271,12 @@ class BlogApiPageTests(APITestCase):
             content=b'file_content',
             content_type='image/jpeg'
         )
-        # Create valid Image entry
+
         self.image = Image.objects.create(
             name='existing',
             alt='An existing image',
             image=self.sample_file
         )
-        # Create Authors
         self.author = Author.objects.create(
             name="Commenter Author",
             email="commenter@example.com",
@@ -312,6 +321,13 @@ class BlogApiPageTests(APITestCase):
 
         self.post_view_page = lambda slug: reverse('BlogApi:post',
                                                    kwargs={'slug': slug})
+
+    def tearDown(self):
+        self.image.image.delete(save=False)
+        self.image.delete()
+
+        self.author.avatar.delete(save=False)
+        self.second_author.avatar.delete(save=False)
 
     def test_posts_count(self):
         url = self.posts_count(2)
