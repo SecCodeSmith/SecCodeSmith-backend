@@ -43,6 +43,7 @@ class ProjectModelsTest(TestCase):
         self.project.image.delete(save=False)
         for img in ProjectGallery.objects.all():
             img.image.delete(save=False)
+        self.gallery1.image.delete(save=False)
 
     def test_category_str(self):
         self.assertEqual(str(self.category.category_name), "Web Development")
