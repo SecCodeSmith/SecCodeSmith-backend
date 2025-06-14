@@ -35,14 +35,8 @@ SecCodeSmith Backend serves as the data layer for the portfolio site, supplying 
 * **Python** 3.10+
 * **Django** 5.2.1
 * **Django REST Framework** 3.16.0
-* **Markdown** for rich-text blog content
-* **django-filter** for API filtering
 * **psycopg2-binary** (optional) for PostgreSQL integration
 * **python-decouple** for environment variable management
-* **django-cors-headers** to enable CORS
-* **Pillow** for image handling
-* **django-extensions** for development utilities
-* **pytest-django** for testing and CI integration ([github.com][1])
 
 ---
 
@@ -53,7 +47,7 @@ SecCodeSmith Backend serves as the data layer for the portfolio site, supplying 
 * **Image Properties**: Serve metadata for portfolio images.
 * **Static Pages**: Endpoints for About, Contact, Skills, and Footer Links content.
 * **CSRF Support**: Retrieve CSRF tokens for secure front-end forms.
-* **Admin Interface**: Built-in Django admin at `/admin/`. ([github.com][2])
+* **Admin Interface**: Built-in Django admin at `/admin/`. 
 
 ---
 
