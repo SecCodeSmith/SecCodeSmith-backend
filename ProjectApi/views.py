@@ -39,9 +39,9 @@ class Projects(APIView):
 
 
 class ProjectDetail(APIView):
-    def get(self, request, pk):
+    def get(self, request, project_id):
         try:
-            project = Project.objects.get(pk=pk)
+            project = Project.objects.get(pk=project_id)
 
             data = {
                 'id': project.pk,
