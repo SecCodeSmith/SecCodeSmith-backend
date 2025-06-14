@@ -88,9 +88,9 @@ class Contact(models.Model):
     """
     Model for contact information in diffrent languages
     """
-    email = models.EmailField()
-    business_email = models.EmailField()
-    phone = models.CharField(max_length=12)
+    email = models.EmailField(null=True, blank=True)
+    business_email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=12, null=True, blank=True)
     map_iframe = models.URLField()
     language = models.ForeignKey(Lang,
                                  on_delete=models.CASCADE,
@@ -165,6 +165,8 @@ class FAQ(models.Model):
     contact = models.ForeignKey(Contact,
                                 on_delete=models.CASCADE,
                                 verbose_name=_('Contact'),)
+    language = models.ForeignKey(Lang, on_delete=models.SET_NULL,
+                                 null=True, blank=True)
     class Meta:
         verbose_name = _('FAQ')
         verbose_name_plural = _('FAQs')

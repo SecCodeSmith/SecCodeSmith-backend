@@ -125,3 +125,40 @@ class SocialLinksFooter(APIView):
         ]
 
         return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
+
+class ContactPage(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request, lang_arg = None):
+        try:
+            lang = Lang.objects.get(iso_code=lang_arg)
+        except Lang.DoesNotExist:
+            lang = Lang.objects.first()
+
+        try:
+            contact = Contact.objects.get(language=lang)
+            socials = SocialLinks.objects.filter(contact_pages=True).all()
+            faq = FAQ.objects.filter(language=lang).all()
+
+            data = {
+                'email': contact.email,
+                'business_email': contact.business_email,
+                'map_iframe_url': contact.map_iframe,
+                'phone': contact.phone,
+                'social_links': [
+                    {
+                        'platform': link.name,
+                        'url': link.url,
+                        'icon': link.icon_class.class_name,
+                    } for link in socials
+                ],
+                'FAQ': [
+                    {
+                        'question': element.question,
+                        'answer': element.answer
+                    } for element in faq
+                ]
+            }
+
+            return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
+        except Contact.DoesNotExist:
+            return JsonResponse({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
