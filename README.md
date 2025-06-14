@@ -7,7 +7,7 @@ This repository contains the Django-powered REST API backend for the SecCodeSmit
 * [About](#about)
 * [Tech Stack](#tech-stack)
 * [Features](#features)
-* [Prerequisites](#prerequisites)
+* [Requirements](#Requirements)
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Running the Server](#running-the-server)
