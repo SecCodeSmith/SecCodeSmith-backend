@@ -3,13 +3,14 @@ from datetime import timezone
 
 from django.http import JsonResponse
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.views import APIView
 
 from BlogApi.models import Post
 
 
 class PostViews(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self,request, slug=None):
         """
         Get post details
@@ -42,6 +43,7 @@ class PostViews(APIView):
                                 status=status.HTTP_404_NOT_FOUND)
 
 class PostPagesCount(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self, request, post_per_page=6):
         try:
             count = Post.objects.filter(published_at__gte=timezone.now()).count() / post_per_page
@@ -52,6 +54,7 @@ class PostPagesCount(APIView):
             return JsonResponse({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class PostPageView(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self, request, page_number=1):
 
         per_page = request.GET.get('per_page', 6)

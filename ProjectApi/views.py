@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -7,6 +7,7 @@ from ProjectApi.models import *
 
 
 class Projects(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self, request):
 
         try:
@@ -39,6 +40,7 @@ class Projects(APIView):
 
 
 class ProjectDetail(APIView):
+    permission_classes = (permissions.AllowAny,)
     def get(self, request, project_id):
         try:
             project = Project.objects.get(pk=project_id)
