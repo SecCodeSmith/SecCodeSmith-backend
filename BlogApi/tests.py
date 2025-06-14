@@ -31,9 +31,9 @@ class AuthorModelTests(TestCase):
             email="john@example.com",
             bio=""
         )
-        self.assertEqual(author.name, "John Smith")
-        self.assertEqual(author.email, "john@example.com")
-        self.assertEqual(author.bio, "")
+        self.assertEqual(author.name, "John Smith", msg="Author name should be correct")
+        self.assertEqual(author.email, "john@example.com", msg="Author email should be correct")
+        self.assertEqual(author.bio, "", msg="Author bio should be correct")
 
         author.avatar.delete(save=False)
 

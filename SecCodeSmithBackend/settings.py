@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'api',
     'BlogApi',
     'Images',
+    'ProjectApi',
 ]
 
 MIDDLEWARE = [
