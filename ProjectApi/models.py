@@ -7,18 +7,6 @@ class ProjectCategory(models.Model):
     """
     category_name = models.CharField(max_length=200)
 
-class ProjectDetail(models.Model):
-    """
-    Model for project details.
-    """
-    full_description = models.TextField()
-    start_date = models.DateField()
-    end_date = models.DateField(blank=True, null=True)
-    role = models.CharField(max_length=100)
-    status = models.CharField(max_length=100)
-    client = models.CharField(max_length=100)
-    full_technologies = models.ManyToManyField(IconsClass, related_name='full_technologies')
-
 class Project(models.Model):
     """
     Model for project data.
@@ -32,12 +20,22 @@ class Project(models.Model):
     github_url = models.URLField(null=True, blank=True)
     demo_url = models.URLField(null=True, blank=True)
     documents_url = models.URLField(null=True, blank=True)
-    project_details = models.ForeignKey(ProjectDetail,
-                                        related_name='project_details',
-                                        on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title
+
+class ProjectDetail(models.Model):
+    """
+    Model for project details.
+    """
+    full_description = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    role = models.CharField(max_length=100)
+    status = models.CharField(max_length=100)
+    client = models.CharField(max_length=100)
+    full_technologies = models.ManyToManyField(IconsClass, related_name='full_technologies')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, blank=True, null=True)
 
 class ProjectGallery(models.Model):
     """
@@ -52,4 +50,4 @@ class KeyFeatures(models.Model):
     Model for key features
     """
     name = models.CharField(max_length=200)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, unique=True)

@@ -29,7 +29,7 @@ class Projects(APIView):
                     'github': project.github_url,
                     'demo': project.demo_url,
                     'documentation': project.documents_url,
-                    'project_details': project.project_details is not None,
+                    'project_details': ProjectDetail.objects.get(project=project) is not None
                 } for project in projects
             ]
 
@@ -39,11 +39,12 @@ class Projects(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-class ProjectDetail(APIView):
+class ProjectDetailEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, project_id):
         try:
             project = Project.objects.get(pk=project_id)
+            project_details = ProjectDetail.objects.get(project=project)
 
             data = {
                 'id': project.pk,
@@ -61,13 +62,13 @@ class ProjectDetail(APIView):
                 'demo': project.demo_url,
                 'documentation': project.documents_url,
                 'project_details': {
-                    'descriptions': project.project_details.full_description,
-                    'start_date': project.project_details.start_date,
-                    'end_date': project.project_details.end_date,
+                    'descriptions': project_details.full_description,
+                    'start_date': project_details.start_date,
+                    'end_date': project_details.end_date,
                     'date_format': '',
-                    'role': project.project_details.role,
-                    'status': project.project_details.status,
-                    'client': project.project_details.client,
+                    'role': project_details.role,
+                    'status': project_details.status,
+                    'client': project_details.client,
                     'key_features': [
                        feature.name for feature in KeyFeatures.objects.filter(project=project).all()
                     ],
@@ -78,7 +79,7 @@ class ProjectDetail(APIView):
                         {
                             'name': tech.name,
                             'icon': tech.class_name,
-                        } for tech in project.project_details.full_technologies.all()
+                        } for tech in project_details.full_technologies.all()
                     ]
                 }
             }

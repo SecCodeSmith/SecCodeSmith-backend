@@ -16,14 +16,7 @@ class ProjectViewsTest(TestCase):
         self.tech1 = IconsClass.objects.create(name="Django", class_name="django-icon")
         self.tech2 = IconsClass.objects.create(name="React", class_name="react-icon")
 
-        self.project_detail = ProjectDetail.objects.create(
-            full_description="Project description",
-            start_date=timezone.now().date(),
-            end_date=None,
-            role="Developer",
-            status="In Progress",
-            client="Test Client",
-        )
+
         image_file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
 
         self.project = Project.objects.create(
@@ -34,7 +27,16 @@ class ProjectViewsTest(TestCase):
             github_url="https://github.com/test/test",
             demo_url="https://demo.test",
             documents_url="https://docs.test",
-            project_details=self.project_detail
+        )
+
+        self.project_detail = ProjectDetail.objects.create(
+            full_description="Project description",
+            start_date=timezone.now().date(),
+            end_date=None,
+            role="Developer",
+            status="In Progress",
+            client="Test Client",
+            project=self.project,
         )
 
         self.project.category.add(self.category)
