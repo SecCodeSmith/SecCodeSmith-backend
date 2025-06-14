@@ -89,7 +89,8 @@ class ModelTests(TestCase):
         self.faq = FAQ.objects.create(
             question="How to contact?",
             answer="Use email.",
-            contact=self.contact
+            contact=self.contact,
+            language=self.lang_en,
         )
 
         self.link_a = SocialLinks.objects.create(
