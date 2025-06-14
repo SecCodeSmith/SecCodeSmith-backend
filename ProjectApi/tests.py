@@ -56,7 +56,7 @@ class ProjectViewsTest(TestCase):
 
         self.projects = reverse('projects:projects')
         self.projects_detail = lambda pk: reverse('projects:project-detail', kwargs={'project_id': pk})
-
+        self.cat = reverse('projects:project-category')
     def tearDown(self):
         self.project.image.delete(save=False)
         for img in ProjectGallery.objects.all():
@@ -83,3 +83,10 @@ class ProjectViewsTest(TestCase):
     def test_get_project_detail_not_found(self):
         response = self.client.get('/projects/999/')  # Non-existent ID
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_project_categories_list(self):
+        url = self.cat
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
