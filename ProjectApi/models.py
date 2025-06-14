@@ -32,7 +32,9 @@ class Project(models.Model):
     github_url = models.URLField(null=True, blank=True)
     demo_url = models.URLField(null=True, blank=True)
     documents_url = models.URLField(null=True, blank=True)
-    project_details = models.ForeignKey(ProjectDetail, related_name='project_details', on_delete=models.SET_NULL, null=True)
+    project_details = models.ForeignKey(ProjectDetail,
+                                        related_name='project_details',
+                                        on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title

@@ -25,14 +25,10 @@ class Projects(APIView):
                             'name': tech.name, 'icon': tech.class_name
                         } for tech in project.main_technologies.all()
                     ],
-                    'fullTechStack': [
-                        {
-                            'name': tech.name, 'icon': tech.class_name
-                        } for tech in project.full_technologies.all()
-                    ],
                     'github': project.github_url,
                     'demo': project.demo_url,
                     'documentation': project.documents_url,
+                    'project_details': project.project_details is not None,
                 } for project in projects
             ]
 
@@ -59,17 +55,33 @@ class ProjectDetail(APIView):
                         'name': tech.name, 'icon': tech.class_name
                     } for tech in project.main_technologies.all()
                 ],
-                'fullTechStack': [
-                    {
-                        'name': tech.name, 'icon': tech.class_name
-                    } for tech in project.full_technologies.all()
-                ],
                 'github': project.github_url,
                 'demo': project.demo_url,
                 'documentation': project.documents_url,
                 'project_details': {
+                    'descriptions': project.project_details.full_description,
+                    'start_date': project.project_details.start_date,
+                    'end_date': project.project_details.end_date,
+                    'date_format': '',
+                    'role': project.project_details.role,
+                    'status': project.project_details.status,
+                    'client': project.project_details.client,
+                    'key_features': [
+                       feature.name for feature in KeyFeatures.objects.filter(project=project).all()
+                    ],
+                    'gallery': [
+                       image.image.url for image in ProjectGallery.objects.filter(project=project).all()
+                    ],
+                    'full_tech_stack': [
+                        {
+                            'name': tech.name,
+                            'icon': tech.class_name,
+                        } for tech in project.project_details.full_technologies.all()
+                    ]
                 }
             }
+
+            return Response(data, status=status.HTTP_200_OK)
 
         except Project.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
