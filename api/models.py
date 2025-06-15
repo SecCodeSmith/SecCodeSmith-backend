@@ -220,6 +220,9 @@ class TechnicalArsenal(models.Model):
     title = models.CharField(_("Technical Arsenal Title"), max_length=100)
     skills = models.ManyToManyField(TechnicalArsenalSkill, verbose_name=_("Skills"), blank=True)
 
+    def __str__(self):
+        return self.title
+
 class Testimonials(models.Model):
     """
     Model for Testimonials
