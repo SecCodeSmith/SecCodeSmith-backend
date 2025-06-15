@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from django.templatetags.i18n import language
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 

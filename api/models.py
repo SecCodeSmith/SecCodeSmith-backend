@@ -16,7 +16,7 @@ class IconsClass(models.Model):
         help_text=_("CSS class categorry_title for the icon (e.g., 'fab fa-github')"),
     )
 
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True, verbose_name=_("Description"))
 
     class Meta:
         ordering = ["name"]
@@ -83,6 +83,9 @@ class Lang(models.Model):
     """
     name = models.CharField(_("Language Name"), max_length=100)
     iso_code = models.CharField(_("ISO Code"), max_length=3)
+
+    def __str__(self):
+        return self.name
 
 class Contact(models.Model):
     """
@@ -178,11 +181,11 @@ class ProfessionalJourney(models.Model):
     """
     Model for professional journey
     """
-    title = models.CharField(_("Technical Arsenal Name"), max_length=100)
-    company = models.CharField(_("Technical Arsenal Company"), max_length=100)
+    title = models.CharField(_("Job title"), max_length=100)
+    company = models.CharField(_("Company name"), max_length=100)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField(_("Technical Arsenal Description"))
+    description = models.TextField(_("Description"))
 
     @property
     def duration(self):
@@ -236,10 +239,10 @@ class About(models.Model):
     lang = models.OneToOneField(Lang,
                              on_delete=models.CASCADE,
                              related_name='about_lang')
-    professional_journey = models.ManyToManyField(ProfessionalJourney, related_name='about_professional_journey')
-    technical_arsenal = models.ManyToManyField(TechnicalArsenal, related_name='about_technical_arsenal')
-    core_value = models.ManyToManyField(CoreValue, related_name='about_core_value')
-    testimonials = models.ManyToManyField(Testimonials, related_name='about_testimonials')
+    professional_journey = models.ManyToManyField(ProfessionalJourney, related_name='about_professional_journey', blank=True)
+    technical_arsenal = models.ManyToManyField(TechnicalArsenal, related_name='about_technical_arsenal', blank=True)
+    core_value = models.ManyToManyField(CoreValue, related_name='about_core_value', blank=True)
+    testimonials = models.ManyToManyField(Testimonials, related_name='about_testimonials', blank=True)
 
     class Meta:
         verbose_name = _('About')
