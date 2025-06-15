@@ -146,7 +146,6 @@ class AboutAdmin(admin.ModelAdmin):
         "core_value",
         "testimonials",
     )
-    readonly_fields = ("lang",)  # single‑language entry, avoid accidental change
 
     class Media:
         # Include optional custom CSS/JS for admin tweaks (if you add them later)
