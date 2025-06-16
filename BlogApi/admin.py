@@ -13,6 +13,7 @@ class CommentInline(admin.TabularInline):
 class AuthorAdmin(admin.ModelAdmin):
     list_display = ('name', 'email')
     search_fields = ('name', 'email')
+    readonly_fields = ("image_tag",)
 
 
 @admin.register(Category)
@@ -41,6 +42,7 @@ class PostAdmin(admin.ModelAdmin):
     autocomplete_fields = ('author', 'category')
     filter_horizontal = ('tags',)
     inlines = [CommentInline]
+    readonly_fields = ("image_tag",)
 
 
 @admin.register(Comment)

@@ -1,5 +1,6 @@
+from django.contrib import admin
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.utils.html import format_html
 from django.utils.text import slugify
 
 class Author(models.Model):
@@ -17,6 +18,14 @@ class Author(models.Model):
         blank=True,
         help_text="Optional profile picture for the author"
     )
+
+    @admin.display
+    def image_tag(self):
+        return format_html('<img src="{}" alt="author img" height="100" />',
+                           self.image.url)
+
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
 
     def __str__(self):
         return self.name
@@ -86,11 +95,9 @@ class Post(models.Model):
     excerpt = models.TextField(
         help_text="Short summary of the post (e.g. first 1–2 sentences)."
     )
-    image = models.URLField(
-        max_length=500,
-        blank=True,
-        help_text="URL to a featured image (or use ImageField if you serve/upload media)."
-    )
+    image = models.ImageField(
+        upload_to='posts/images/',
+        null=True, blank=True,)
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
@@ -133,6 +140,14 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    @admin.display
+    def image_tag(self):
+        return format_html('<img src="{}" height="100" />',
+                           self.image.url)
+
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
 
     @property
     def comment_count(self):

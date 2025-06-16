@@ -1,4 +1,7 @@
+from django.contrib import admin
 from django.db import models
+from django.utils.html import format_html
+
 from api.models import IconsClass
 
 class ProjectCategory(models.Model):
@@ -25,6 +28,14 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
+    @admin.display
+    def image_tag(self):
+        return format_html('<img src="{}" height="100" />',
+                           self.image.url)
+
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
+
 class ProjectDetail(models.Model):
     """
     Model for project details.
@@ -43,12 +54,20 @@ class ProjectGallery(models.Model):
     Model for project gallery
     """
     alternative_text = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='project_galerry/')
+    image = models.ImageField(upload_to='project_gallery/')
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    @admin.display
+    def image_tag(self):
+        return format_html('<img src="{}" height="100" />',
+                           self.image.url)
+
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
 
 class KeyFeatures(models.Model):
     """
     Model for key features
     """
     name = models.CharField(max_length=200)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, unique=True)
+    project = models.OneToOneField(Project, on_delete=models.CASCADE)
