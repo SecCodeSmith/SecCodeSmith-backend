@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50, verbose_name='Guild name')),
-                ('image', models.ImageField(upload_to=Images.models.image_upload_path)),
+                ('image', models.ImageField(upload_to='images/')),
                 ('alt', models.CharField(blank=True, max_length=120, null=True, verbose_name='Alternative text')),
             ],
             options={

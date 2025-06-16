@@ -6,18 +6,9 @@ from django.utils.text import slugify
 from django.utils.html import escape, format_html
 
 
-def image_upload_path(instance: "Image", filename: str) -> str:
-    """
-    Store every image under
-        media/Images/<slugified guild name>/<original filename>
-    """
-    guild_slug = slugify(instance.name or "unknown")
-    return os.path.join("Images", f"{guild_slug}{filename}")
-
-
 class Image(models.Model):
     name = models.CharField("Guild name", max_length=50)
-    image = models.ImageField(upload_to=image_upload_path)
+    image = models.ImageField(upload_to='images/')
     alt = models.CharField("Alternative text", max_length=120, blank=True, null=True)
 
     class Meta:
