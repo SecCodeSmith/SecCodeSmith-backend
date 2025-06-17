@@ -132,8 +132,8 @@ class ModelTests(TestCase):
         self.assertTrue(self.link_b.contact_pages)
         self.assertFalse(self.link_b.about_pages)
 
-    def test_iconsclass_str_and_fields(self):
-        self.assertEqual(str(self.icon_github), "fab fa-github")
+    def test_icons_class_str_and_fields(self):
+        self.assertEqual(str(self.icon_github), "GitHub")
         self.assertEqual(self.icon_github.name, "GitHub")
         self.assertEqual(self.icon_github.class_name, "fab fa-github")
         self.assertEqual(self.icon_github.description, "GitHub icon")

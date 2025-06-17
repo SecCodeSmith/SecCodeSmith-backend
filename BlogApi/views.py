@@ -19,7 +19,6 @@ class PostViews(APIView):
         if not slug:
             return JsonResponse({'error':'No post slug provided'},
                                 status=status.HTTP_400_BAD_REQUEST)
-        data = {}
         try:
             post = Post.objects.get(slug=slug)
 
@@ -28,9 +27,10 @@ class PostViews(APIView):
                 'slug': post.slug,
                 'title': post.title,
                 'excerpt': post.excerpt,
-                'image': post.image,
+                'image': post.image.url or "",
                 'category': post.category.title,
                 'date': post.published_at.strftime('%d-%m-%Y'),
+                'content': post.content,
                 'author': {
                     'name': post.author.name,
                     'bio': post.author.bio,
@@ -57,12 +57,15 @@ class PostPageView(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, page_number=1):
 
-        per_page = request.GET.get('per_page', 6)
+        per_page = request.GET.get('per_page', '6')
+
+        per_page = int(per_page)
+
         filt_json = request.GET.get('filter')
 
         try:
             posts = (Post.objects.
-                    filter(published_at__gte=timezone.now()).
+                    filter(published_at__lte=timezone.now()).
                      order_by('-published_at').all())
             if filt_json:
                 filt_json = json.loads(filt_json)
@@ -82,9 +85,12 @@ class PostPageView(APIView):
                 'posts': [
                     {
                         'title': post.title,
+                        'slug': post.slug,
                         'author': post.author.name,
                         'publish_at': post.published_at.strftime("%d-%m-%Y"),
                         'comments': post.comment_count,
+                        'featured': post.featured,
+                        'image': post.image.url or "",
                         'tags': [ tag.name for tag in post.tags.all()],
                         'category': post.category.title,
                     }

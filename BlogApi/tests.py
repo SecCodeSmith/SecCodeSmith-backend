@@ -300,7 +300,7 @@ class BlogApiPageTests(APITestCase):
             post = Post.objects.create(
                 title=f"Test Post {i}",
                 excerpt="Excerpt.",
-                image="",
+                image=self.sample_file,
                 category=self.category,
                 published_at=self.sample_date if i < 6 else self.future_date,
                 author=self.author if i % 2 == 0 else self.second_author,
@@ -328,6 +328,10 @@ class BlogApiPageTests(APITestCase):
 
         self.author.avatar.delete(save=False)
         self.second_author.avatar.delete(save=False)
+        for post in self.posts:
+            post.image.delete(save=False)
+            
+        super().tearDown()
 
     def test_posts_count(self):
         url = self.posts_count(2)
