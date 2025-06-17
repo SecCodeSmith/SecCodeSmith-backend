@@ -22,7 +22,7 @@ class IconsClass(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return self.class_name
+        return self.name
 
 
 class SocialLinks(models.Model):
@@ -141,6 +141,9 @@ class SkillsCard(models.Model):
                                    on_delete=models.SET_NULL,
                                    null=True)
     skills = models.ManyToManyField(Skill,)
+
+    def __str__(self):
+        return self.category_title
 
 class CoreValue(models.Model):
     """
