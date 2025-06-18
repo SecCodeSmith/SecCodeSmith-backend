@@ -98,7 +98,8 @@ class ProjectCategoryEndpoint(APIView):
             data = [
                 {
                     'name': category.category_name,
-                    'short': cat.short,
+                    'short': category.short,
+                    'countOfProject': Project.objects.filter(category=category).count(),
                 } for category in cat
             ]
 
@@ -106,15 +107,3 @@ class ProjectCategoryEndpoint(APIView):
         except Category.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-class TagLists(APIView):
-    permission_classes = (permissions.AllowAny,)
-    def get(self, request):
-        try:
-            tag = Tag.objects.all()
-            data = [{
-                'name': t.name,
-                'slug': t.slug
-            } for t in tag]
-            return Response(data, status=status.HTTP_200_OK)
-        except Tag.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)

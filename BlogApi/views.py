@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 
-from BlogApi.models import Post
+from BlogApi.models import Post, Tag
 
 
 class PostViews(APIView):
@@ -105,3 +105,16 @@ class PostPageView(APIView):
                 {'error': 'Invalid JSON in filter param'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class TagLists(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request):
+        try:
+            tag = Tag.objects.all()
+            data = [{
+                'name': t.name,
+                'slug': t.slug
+            } for t in tag]
+            return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
+        except Tag.DoesNotExist:
+            return JsonResponse({'error': 'not found'} ,status=status.HTTP_404_NOT_FOUND)

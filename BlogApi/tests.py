@@ -294,6 +294,7 @@ class BlogApiPageTests(APITestCase):
         self.future_date = datetime.now() + timedelta(days=1)
         # Category
         self.category = Category.objects.create(title="Comments Category")
+        self.tag = Tag.objects.create(slug='test', name='testr')
         # Generate 12 Posts
         self.posts = []
         for i in range(12):
@@ -310,6 +311,8 @@ class BlogApiPageTests(APITestCase):
                 slug=f"test-slug-{i}",
             )
             self.posts.append(post)
+            if i % 2 == 0:
+                post.tags.add(self.tag)
 
 
         self.posts_count = lambda count_post_on_page: \
@@ -321,6 +324,8 @@ class BlogApiPageTests(APITestCase):
 
         self.post_view_page = lambda slug: reverse('BlogApi:post',
                                                    kwargs={'slug': slug})
+
+        self.tags = reverse('BlogApi:blog-tags')
 
     def tearDown(self):
         self.image.image.delete(save=False)
@@ -369,7 +374,13 @@ class BlogApiPageTests(APITestCase):
             self.assertEqual(payload['id'], page.id)
             self.assertIn('slug', payload)
             self.assertEqual(payload['slug'], page.slug)
-            self.assertEqual(len(payload), 8)
+            self.assertEqual(len(payload), 9)
+
+    def test_tags(self):
+        response = self.client.get(self.tags)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload), 1)
         
 class BlogApiPageEmptyDatabaseTests(APITestCase):
     def setUp(self):
@@ -382,6 +393,8 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
 
         self.post_view_page = lambda slug: reverse('BlogApi:post',
                                                    kwargs={'slug': slug})
+
+        self.tags = reverse('BlogApi:blog-tags')
 
     def test_no_posts_count(self):
         url = self.posts_count(2)
@@ -405,3 +418,9 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
         url = self.post_view_page("test")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_tags_empty(self):
+        response = self.client.get(self.tags)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload), 0)

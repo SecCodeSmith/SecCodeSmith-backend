@@ -89,7 +89,4 @@ class ProjectViewsTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-
-    def test_get_project_tags(self):
-        pass
-
+        self.assertEqual(response.data[0]['countOfProject'], 1)
