@@ -3,7 +3,7 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from BlogApi.models import Category
+from BlogApi.models import Category, Tag
 from ProjectApi.models import *
 
 
@@ -97,10 +97,24 @@ class ProjectCategoryEndpoint(APIView):
             cat = ProjectCategory.objects.all()
             data = [
                 {
-                    'name': category.category_name
+                    'name': category.category_name,
+                    'short': cat.short,
                 } for category in cat
             ]
 
             return Response(data, status=status.HTTP_200_OK)
         except Category.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+class TagLists(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request):
+        try:
+            tag = Tag.objects.all()
+            data = [{
+                'name': t.name,
+                'slug': t.slug
+            } for t in tag]
+            return Response(data, status=status.HTTP_200_OK)
+        except Tag.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

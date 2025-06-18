@@ -6,5 +6,6 @@ app_name = "projects"
 urlpatterns = [
     path('projects/', view=Projects.as_view(), name='projects'),
     path('projects/<int:project_id>/', view=ProjectDetailEndpoint.as_view(), name='project-detail'),
-    path('cat', view=ProjectCategoryEndpoint.as_view(), name='project-category'),
+    path('cats/', view=ProjectCategoryEndpoint.as_view(), name='project-category'),
+    path('tags/', view=ProjectCategoryEndpoint.as_view(), name='project-tags'),
 ]

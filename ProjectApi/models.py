@@ -8,7 +8,7 @@ class ProjectCategory(models.Model):
     """
     Model for project categories
     """
-    category_name = models.CharField(max_length=200)
+    category_name = models.CharField(max_length=200, unique=True)
     short = models.CharField(max_length=10, unique=True)
 
 class Project(models.Model):
