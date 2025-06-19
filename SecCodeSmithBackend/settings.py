@@ -1,3 +1,4 @@
+import mimetypes
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +49,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
+
 
 ROOT_URLCONF = 'SecCodeSmithBackend.urls'
 
@@ -141,5 +143,5 @@ REST_FRAMEWORK = {
     ]
 }
 
-# Allow admin interface media
+mimetypes.add_type("image/webp", ".webp", True)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
