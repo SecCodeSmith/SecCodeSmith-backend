@@ -7,7 +7,7 @@ from BlogApi.models import Category, Tag
 from ProjectApi.models import *
 
 
-class Projects(APIView):
+class ProjectsEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request):
 

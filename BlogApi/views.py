@@ -6,10 +6,10 @@ from django.utils import timezone
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 
-from BlogApi.models import Post, Tag
+from BlogApi.models import Post, Tag, Category
 
 
-class PostViews(APIView):
+class PostViewsEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self,request, slug=None):
         """
@@ -42,18 +42,20 @@ class PostViews(APIView):
             return JsonResponse({'error':'Post not found'},
                                 status=status.HTTP_404_NOT_FOUND)
 
-class PostPagesCount(APIView):
+class PostPagesCountEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, post_per_page=6):
         try:
-            count = Post.objects.filter(published_at__gte=timezone.now()).count() / post_per_page
+            count = (Post.objects
+                     .filter(published_at__gte=timezone.now()).count() / post_per_page)
 
             return JsonResponse({'count': count},status=status.HTTP_200_OK)
 
         except Post.DoesNotExist:
-            return JsonResponse({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'error':'Post not found'},
+                                status=status.HTTP_404_NOT_FOUND)
 
-class PostPageView(APIView):
+class PostPageViewEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, page_number=1):
 
@@ -99,14 +101,15 @@ class PostPageView(APIView):
             }
             return JsonResponse(data, status=status.HTTP_200_OK)
         except Post.DoesNotExist:
-            return JsonResponse({'error':'Post not found'},status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'error':'Post not found'},
+                                status=status.HTTP_404_NOT_FOUND)
         except ValueError:
             return JsonResponse(
                 {'error': 'Invalid JSON in filter param'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-class TagLists(APIView):
+class TagListsEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request):
         try:
@@ -117,4 +120,21 @@ class TagLists(APIView):
             } for t in tag]
             return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
         except Tag.DoesNotExist:
-            return JsonResponse({'error': 'not found'} ,status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'error': 'not found'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+class BlogCategoriesEndpoint(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request):
+        try:
+            category = Category.objects.all()
+            data = [{
+                'title': category.title,
+                'slug': category.slug,
+                'BlogCount': Post.objects.filter(published_at__lt=timezone.now(),
+                                                 category=category).count(),
+            } for category in category]
+            return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
+        except Category.DoesNotExist:
+            return JsonResponse({'error':'not found'},
+                                status=status.HTTP_404_NOT_FOUND)

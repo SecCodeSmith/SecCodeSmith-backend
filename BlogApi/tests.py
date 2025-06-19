@@ -326,6 +326,7 @@ class BlogApiPageTests(APITestCase):
                                                    kwargs={'slug': slug})
 
         self.tags = reverse('BlogApi:blog-tags')
+        self.categoryEndpoint = reverse('BlogApi:blog-categories')
 
     def tearDown(self):
         self.image.image.delete(save=False)
@@ -381,7 +382,19 @@ class BlogApiPageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.content)
         self.assertEqual(len(payload), 1)
-        
+
+    def test_categories(self):
+        response = self.client.get(self.categoryEndpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload), 1)
+        self.assertIn('slug', payload[0])
+        self.assertEqual(payload[0]['slug'], self.category.slug)
+        self.assertIn('title', payload[0])
+        self.assertEqual(payload[0]['title'], self.category.title)
+        self.assertIn('BlogCount', payload[0])
+        self.assertEqual(payload[0]['BlogCount'], 6)
+
 class BlogApiPageEmptyDatabaseTests(APITestCase):
     def setUp(self):
         self.posts_count = lambda count_post_on_page: \
@@ -395,6 +408,7 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
                                                    kwargs={'slug': slug})
 
         self.tags = reverse('BlogApi:blog-tags')
+        self.categoryEndpoint = reverse('BlogApi:blog-categories')
 
     def test_no_posts_count(self):
         url = self.posts_count(2)
@@ -421,6 +435,12 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
 
     def test_tags_empty(self):
         response = self.client.get(self.tags)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload), 0)
+
+    def test_categories_empty(self):
+        response = self.client.get(self.categoryEndpoint)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.content)
         self.assertEqual(len(payload), 0)
