@@ -375,7 +375,7 @@ class BlogApiPageTests(APITestCase):
             self.assertEqual(payload['id'], page.id)
             self.assertIn('slug', payload)
             self.assertEqual(payload['slug'], page.slug)
-            self.assertEqual(len(payload), 9)
+            self.assertEqual(len(payload), 12)
 
     def test_tags(self):
         response = self.client.get(self.tags)

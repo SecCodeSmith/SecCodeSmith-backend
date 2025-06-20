@@ -29,6 +29,14 @@ class PostViewsEndpoint(APIView):
                 'excerpt': post.excerpt,
                 'image': post.image.url or "",
                 'category': post.category.title,
+                'read_time': post.read_time,
+                'publish_at': post.published_at.strftime("%d-%m-%Y"),
+                'tags': [
+                    {
+                        'name': tag.name,
+                        'slug': tag.slug
+                    } for tag in post.tags.all()
+                ],
                 'date': post.published_at.strftime('%d-%m-%Y'),
                 'content': post.content,
                 'author': {
