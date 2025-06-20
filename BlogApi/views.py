@@ -75,7 +75,7 @@ class PostPageViewEndpoint(APIView):
                 if 'title' in filt_json:
                     posts = posts.filter(title__icontains=filt_json['title'])
                 if 'tags' in filt_json:
-                    posts = posts.filter(tags__slug=filt_json['tags'])
+                    posts = posts.filter(tags__slug__in=filt_json['tags'])
                 if 'category' in filt_json:
                     posts = posts.filter(category__slug=filt_json['category'])
 
