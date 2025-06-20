@@ -50,6 +50,36 @@ class PostViewsEndpoint(APIView):
             return JsonResponse({'error':'Post not found'},
                                 status=status.HTTP_404_NOT_FOUND)
 
+class RelatedPostsViewsEndpoint(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def get(self,request,slug=None):
+        """
+        Get 3 related post for main.
+        """
+        if not slug:
+            return JsonResponse({'error':'No post slug provided'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        try:
+            post = Post.objects.get(slug=slug)
+
+            related_posts = (Post.objects.
+                             filter(published_at__lte=timezone.now()).
+                             filter(category=post.category))[:3]
+
+            data = {
+                {
+                    'id': post.pk,
+                    'slug': post.slug,
+                    'title': post.title,
+                    'publish_at': post.published_at.strftime("%d-%m-%Y"),
+                } for post_ in related_posts
+            }
+            return JsonResponse(data, status=status.HTTP_200_OK)
+        except Post.DoesNotExist:
+            return JsonResponse({'error':'Post not found'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+
 class PostPagesCountEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, post_per_page=6):
