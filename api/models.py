@@ -148,22 +148,7 @@ class SkillsCard(models.Model):
     def __str__(self):
         return self.category_title
 
-class CoreValue(models.Model):
-    """
-    Model to store core values
-    """
-    title = models.CharField(_('title'), max_length=100)
-    icon = models.ForeignKey(IconsClass,
-                             on_delete=models.PROTECT,
-                             verbose_name=_('icon'))
-    description = models.TextField(_('description'))
 
-    class Meta:
-        verbose_name = _('core value')
-        verbose_name_plural = _('core values')
-
-    def __str__(self):
-        return "Title: {} Text: {}".format(self.title, self.description)
 
 class FAQ(models.Model):
     """
@@ -181,6 +166,25 @@ class FAQ(models.Model):
     def __str__(self):
         return self.question
 
+
+
+class About(models.Model):
+    """
+    Model for About in diffrent languages
+    """
+    about_title = models.CharField(_("About Title"), max_length=100)
+    sub_title = models.CharField(_("Sub Title"), max_length=100)
+    about_text = models.TextField(_("About Text"))
+    lang = models.OneToOneField(Lang,
+                             on_delete=models.CASCADE,
+                             related_name='about_lang')
+
+    class Meta:
+        verbose_name = _('About')
+
+    def __str__(self):
+        return self.about_title
+
 class ProfessionalJourney(models.Model):
     """
     Model for professional journey
@@ -190,6 +194,9 @@ class ProfessionalJourney(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(_("Description"), blank=True, null=True)
+    about = models.ForeignKey(About, on_delete=models.CASCADE,
+                              verbose_name=_('About_ProfessionalJourney'), null=True)
+
 
     @property
     def duration(self):
@@ -208,24 +215,27 @@ class ProfessionalJourney(models.Model):
     def __str__(self):
         return self.title
 
-class TechnicalArsenalSkill(models.Model):
-    text = models.TextField(_('Technical Arsenal Skill'))
-    class Meta:
-        verbose_name = _('Technical Arsenal Skill')
-
-    def __str__(self):
-        return self.text
-
 class TechnicalArsenal(models.Model):
     """"
     Model for Technical Arsenal
     """
     icon = models.ForeignKey(IconsClass, on_delete=models.CASCADE)
     title = models.CharField(_("Technical Arsenal Title"), max_length=100)
-    skills = models.ManyToManyField(TechnicalArsenalSkill, verbose_name=_("Skills"), blank=True)
+    about = models.ForeignKey(About, on_delete=models.CASCADE,
+                              verbose_name=_('Technical Arsenal Skill'), null=True)
 
     def __str__(self):
         return self.title
+
+class TechnicalArsenalSkill(models.Model):
+    text = models.CharField(_('Technical Arsenal Skill'), max_length=100)
+    technical_arsenal = models.ForeignKey(TechnicalArsenal, on_delete=models.CASCADE,
+                              verbose_name=_('Technical Arsenal Skill'), null=True)
+    class Meta:
+        verbose_name = _('Technical Arsenal Skill')
+
+    def __str__(self):
+        return self.text
 
 class Testimonials(models.Model):
     """
@@ -235,26 +245,25 @@ class Testimonials(models.Model):
     email = models.EmailField(_("Email"), max_length=100)
     position = models.CharField(_("Position"), max_length=100)
     text = models.TextField(_("Text"))
+    about = models.ForeignKey(About, on_delete=models.CASCADE,
+                              verbose_name=_('Technical Arsenal Skill'), null=True)
 
+class CoreValue(models.Model):
+    """
+    Model to store core values
+    """
+    title = models.CharField(_('title'), max_length=100)
+    icon = models.ForeignKey(IconsClass,
+                             on_delete=models.PROTECT,
+                             verbose_name=_('icon'))
+    description = models.TextField(_('description'))
 
-class About(models.Model):
-    """
-    Model for About in diffrent languages
-    """
-    about_title = models.CharField(_("About Title"), max_length=100)
-    sub_title = models.CharField(_("Sub Title"), max_length=100)
-    about_text = models.TextField(_("About Text"))
-    lang = models.OneToOneField(Lang,
-                             on_delete=models.CASCADE,
-                             related_name='about_lang')
-    professional_journey = models.ManyToManyField(ProfessionalJourney, related_name='about_professional_journey', blank=True)
-    technical_arsenal = models.ManyToManyField(TechnicalArsenal, related_name='about_technical_arsenal', blank=True)
-    core_value = models.ManyToManyField(CoreValue, related_name='about_core_value', blank=True)
-    testimonials = models.ManyToManyField(Testimonials, related_name='about_testimonials', blank=True)
+    about = models.ForeignKey(About, on_delete=models.CASCADE,
+                              verbose_name=_('Core value about'), null=True)
 
     class Meta:
-        verbose_name = _('About')
+        verbose_name = _('core value')
+        verbose_name_plural = _('core values')
 
     def __str__(self):
-        return self.about_title
-
+        return "Title: {} Text: {}".format(self.title, self.description)

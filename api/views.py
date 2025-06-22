@@ -58,6 +58,10 @@ class AboutPage(APIView):
 
         try:
             about = About.objects.get(lang=lang)
+            professional_journey = ProfessionalJourney.objects.filter(about=about).all()
+            technical_arsenal = TechnicalArsenal.objects.filter(about=about).all()
+            core_value = CoreValue.objects.filter(about=about).all()
+            testimonials = Testimonials.objects.filter(about=about).all()
         except About.DoesNotExist:
             return JsonResponse({'error': 'About in lang {} not found'.format(lang.name or lang_arg)}
                                 , status=status.HTTP_404_NOT_FOUND)
@@ -71,30 +75,30 @@ class AboutPage(APIView):
                     'title': item.title,
                     'description': item.description,
                     'duration': item.duration
-                } for item in about.professional_journey.all()
+                } for item in professional_journey
             ],
             'technical_arsenal': [
                 {
                     'icon': item.icon.class_name,
                     'title': item.title,
                     'skills': [
-                       skill.text for skill in item.skills.all()
+                       skill.text for skill in TechnicalArsenalSkill.objects.filter(technical_arsenal=item).all()
                     ]
-                } for item in about.technical_arsenal.all()
+                } for item in technical_arsenal
             ],
             'core_values': [
                 {
                     'title': value.title,
                     'icon': value.icon.class_name,
                     'descriptions': value.description,
-                } for value in about.core_value.all()
+                } for value in core_value
             ],
             'testimonials': [
                 {
                     'author': testimonial.author,
                     'position': testimonial.position,
                     'text': testimonial.text,
-                } for testimonial in about.testimonials.all()
+                } for testimonial in testimonials
             ],
             'about_social_links': [
                 {

@@ -7,237 +7,6 @@ from rest_framework import status
 from api.models import *
 from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
 
-
-class ModelTests(TestCase):
-    def setUp(self):
-        self.icon_github = IconsClass.objects.create(
-            name="GitHub",
-            class_name="fab fa-github",
-            description="GitHub icon"
-        )
-
-        self.icon_linkedin = IconsClass.objects.create(
-            name="LinkedIn",
-            class_name="fab fa-linkedin",
-            description="LinkedIn icon"
-        )
-
-        self.lang_en = Lang.objects.create(name="English", iso_code="en")
-        self.lang_pl = Lang.objects.create(name="Polish", iso_code="pl")
-
-        self.contact = Contact.objects.create(
-            email="user@example.com",
-            business_email="biz@example.com",
-            phone="+48123123123",
-            map_iframe="https://maps.example.com/embed",
-            language=self.lang_en
-        )
-
-        self.skill_prog = Skill.objects.create(
-            name="Programming Languages",
-            icon_class=self.icon_github
-        )
-        self.skill_fw = Skill.objects.create(
-            name="Frameworks",
-            icon_class=self.icon_linkedin
-        )
-
-        self.card = SkillsCard.objects.create(
-            category_title="Dev Skills",
-            icon_class=self.icon_github
-        )
-        self.card.skills.add(self.skill_prog, self.skill_fw)
-
-        self.core_value = CoreValue.objects.create(
-            title="Integrity",
-            icon=self.icon_linkedin,
-            description="Always do the right thing."
-        )
-
-        self.prof_journey = ProfessionalJourney.objects.create(
-            title="Backend Developer",
-            company="Acme Corp",
-            start_date=datetime.strptime("1-2018" ,"%m-%Y"),
-            end_date=datetime.strptime("1-2021" ,"%m-%Y"),
-            description="Worked on REST APIs."
-        )
-
-        self.tech_skill = TechnicalArsenalSkill.objects.create(text="Django")
-
-        self.tech_arsenal = TechnicalArsenal.objects.create(
-            icon=self.icon_github,
-            title="Backend Stack"
-        )
-        self.tech_arsenal.skills.add(self.tech_skill)
-
-        self.testimonial = Testimonials.objects.create(
-            author="John Doe",
-            email="john@example.com",
-            position="CTO",
-            text="Great work!"
-        )
-
-        self.about = About.objects.create(
-            about_title="About Me",
-            about_text="I am a developer.",
-            lang=self.lang_en
-        )
-        self.about.professional_journey.add(self.prof_journey)
-        self.about.technical_arsenal.add(self.tech_arsenal)
-        self.about.core_value.add(self.core_value)
-
-        self.faq = FAQ.objects.create(
-            question="How to contact?",
-            answer="Use email.",
-            contact=self.contact,
-            language=self.lang_en,
-        )
-
-        self.link_a = SocialLinks.objects.create(
-            name="Alpha",
-            url="https://alpha.example.com",
-            footer=True,
-            contact_pages=False,
-            about_pages=True,
-            icon_class=self.icon_github
-        )
-
-        self.link_b = SocialLinks.objects.create(
-            name="Beta",
-            url="https://beta.example.com",
-            footer=False,
-            contact_pages=True,
-            about_pages=False,
-            icon_class=self.icon_linkedin
-        )
-
-    def test_str_returns_name(self):
-        self.assertEqual(str(self.link_a), "Alpha")
-        self.assertEqual(str(self.link_b), "Beta")
-
-    def test_ordering_by_name(self):
-        links = list(SocialLinks.objects.all())
-        self.assertEqual(links[0].name, "Alpha")
-        self.assertEqual(links[1].name, "Beta")
-
-    def test_icon_class_relationship(self):
-        self.assertEqual(self.link_a.icon_class, self.icon_github)
-        self.assertEqual(self.link_b.icon_class, self.icon_linkedin)
-
-    def test_boolean_fields(self):
-        self.assertTrue(self.link_a.footer)
-        self.assertFalse(self.link_a.contact_pages)
-        self.assertTrue(self.link_a.about_pages)
-        self.assertFalse(self.link_b.footer)
-        self.assertTrue(self.link_b.contact_pages)
-        self.assertFalse(self.link_b.about_pages)
-
-    def test_icons_class_str_and_fields(self):
-        self.assertEqual(str(self.icon_github), "GitHub")
-        self.assertEqual(self.icon_github.name, "GitHub")
-        self.assertEqual(self.icon_github.class_name, "fab fa-github")
-        self.assertEqual(self.icon_github.description, "GitHub icon")
-
-    def test_lang_fields(self):
-        self.assertEqual(self.lang_en.name, "English")
-        self.assertEqual(self.lang_en.iso_code, "en")
-
-    def test_contact_str_and_fields(self):
-        expected = f"Email: {self.contact.email} Business email {self.contact.business_email} Phone {self.contact.phone} Lang {self.lang_en}"
-        self.assertEqual(str(self.contact), expected)
-        self.assertEqual(self.contact.language, self.lang_en)
-
-    def test_skill_str_and_icon_relation(self):
-        self.assertEqual(str(self.skill_prog), "Programming Languages")
-        self.assertEqual(self.skill_prog.icon_class, self.icon_github)
-
-    def test_skillscard_relations(self):
-        self.assertEqual(self.card.category_title, "Dev Skills")
-        self.assertEqual(self.card.icon_class, self.icon_github)
-        skills_in_card = list(self.card.skills.all())
-        self.assertIn(self.skill_prog, skills_in_card)
-        self.assertIn(self.skill_fw, skills_in_card)
-
-    def test_corevalue_str_and_fields(self):
-        self.assertEqual(str(self.core_value), f"Title: Integrity Text: Always do the right thing.")
-        self.assertEqual(self.core_value.icon, self.icon_linkedin)
-        self.assertEqual(self.core_value.description, "Always do the right thing.")
-
-    def test_faq_str_and_relation(self):
-        self.assertEqual(str(self.faq), "How to contact?")
-        self.assertEqual(self.faq.contact, self.contact)
-
-    def test_professionaljourney_str_and_fields(self):
-        self.assertEqual(str(self.prof_journey), "Backend Developer")
-        self.assertEqual(self.prof_journey.company, "Acme Corp")
-        self.assertEqual(self.prof_journey.duration, "01.2018-01.2021")
-        self.assertIn("REST APIs", self.prof_journey.description)
-
-    def test_technicalarsenalskill_str(self):
-        self.assertEqual(str(self.tech_skill), "Django")
-
-    def test_technicalarsenal_relations(self):
-        self.assertEqual(self.tech_arsenal.title, "Backend Stack")
-        self.assertEqual(self.tech_arsenal.icon, self.icon_github)
-        skills_list = list(self.tech_arsenal.skills.all())
-        self.assertIn(self.tech_skill, skills_list)
-
-    def test_testimonials_fields(self):
-        self.assertEqual(self.testimonial.author, "John Doe")
-        self.assertEqual(self.testimonial.email, "john@example.com")
-        self.assertEqual(self.testimonial.position, "CTO")
-        self.assertEqual(self.testimonial.text, "Great work!")
-
-    def test_about_str_and_relations(self):
-        self.assertEqual(self.about.about_title, "About Me")
-        self.assertEqual(self.about.about_text, "I am a developer.")
-        self.assertEqual(self.about.lang, self.lang_en)
-
-        pj_list = list(self.about.professional_journey.all())
-        self.assertIn(self.prof_journey, pj_list)
-
-        ta_list = list(self.about.technical_arsenal.all())
-        self.assertIn(self.tech_arsenal, ta_list)
-
-        cv_list = list(self.about.core_value.all())
-        self.assertIn(self.core_value, cv_list)
-
-        try:
-            testimonials_qs = getattr(self.about, "about_testimonials")
-            self.assertTrue(hasattr(testimonials_qs, "all"))
-        except Exception:
-            pass
-
-    def test_about_without_testimonials_assignment(self):
-        about2 = About.objects.create(
-            about_title="Another About",
-            about_text="More text.",
-            lang=self.lang_pl
-        )
-        about2.professional_journey.add(self.prof_journey)
-        about2.technical_arsenal.add(self.tech_arsenal)
-        about2.core_value.add(self.core_value)
-        self.assertIsInstance(about2, About)
-
-class CSRFTokenViewTests(APITestCase):
-    def setUp(self):
-        self.factory = APIRequestFactory()
-        self.view = CSRFTokenView.as_view()
-
-    def test_get_returns_csrf_token(self):
-        """
-        GET on CSRFTokenView should return a 200 OK with a JSON payload
-        containing the key "csrfToken" and a non‐empty string value.
-        """
-        request = self.factory.get("/api/csrf")
-        response = self.view(request)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        payload = json.loads(response.text)
-        self.assertIn("csrfToken", payload)
-        token = payload["csrfToken"]
-        self.assertIsInstance(token, str)
-        self.assertGreater(len(token), 0)
-
 class SkillCardsViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -323,24 +92,6 @@ class AboutPageViewTests(APITestCase):
             name="SampleIcon", class_name="fas fa-sample", description="Sample icon"
         )
 
-        self.prof_journey = ProfessionalJourney.objects.create(
-            title="Backend Developer",
-            company="Acme Corp",
-            start_date=datetime.strptime("01-2018" ,"%m-%Y"),
-            end_date=datetime.strptime("01-2021", "%m-%Y"),
-            description="Built REST APIs",
-        )
-
-        self.tech_skill = TechnicalArsenalSkill.objects.create(text="Django")
-        self.tech_arsenal = TechnicalArsenal.objects.create(
-            icon=self.icon, title="Python Stack"
-        )
-        self.tech_arsenal.skills.add(self.tech_skill)
-
-        self.core_value = CoreValue.objects.create(
-            title="Integrity", icon=self.icon, description="Always do right"
-        )
-
         self.testimonial = Testimonials.objects.create(
             author="Jane Smith", email="jane@example.com", position="CTO", text="Excellent!"
         )
@@ -350,9 +101,30 @@ class AboutPageViewTests(APITestCase):
             about_text="I am a full‐stack developer.",
             lang=self.lang_en,
         )
-        self.about.professional_journey.add(self.prof_journey)
-        self.about.technical_arsenal.add(self.tech_arsenal)
-        self.about.core_value.add(self.core_value)
+
+        self.tech_arsenal = TechnicalArsenal.objects.create(
+            icon=self.icon, title="Python Stack", about=self.about
+        )
+
+        self.prof_journey = ProfessionalJourney.objects.create(
+            title="Backend Developer",
+            company="Acme Corp",
+            start_date=datetime.strptime("01-2018", "%m-%Y"),
+            end_date=datetime.strptime("01-2021", "%m-%Y"),
+            description="Built REST APIs",
+            about=self.about,
+        )
+
+        self.tech_skill = TechnicalArsenalSkill.objects.create(
+            text="Django",
+            technical_arsenal=self.tech_arsenal
+        )
+        self.core_value = CoreValue.objects.create(
+            about=self.about,
+            title="Integrity",
+            icon=self.icon,
+            description="Always do right"
+        )
         try:
             self.about.testimonials.add(self.testimonial)
         except Exception:

@@ -122,18 +122,42 @@ class TechnicalArsenalSkillAdmin(admin.ModelAdmin):
     list_display = ("text",)
     search_fields = ("text",)
 
+class TechnicalArsenalSkillInLine(admin.TabularInline):
+    model = TechnicalArsenalSkill
+    extra = 0
+    fields = ("text",)
 
 @admin.register(TechnicalArsenal)
 class TechnicalArsenalAdmin(admin.ModelAdmin):
     list_display = ("title", "icon")
     search_fields = ("title",)
     autocomplete_fields = ("icon",)
-    filter_horizontal = ("skills",)
+    inlines = [TechnicalArsenalSkillInLine]
 
 
 # ===========================
 #  Testimonials & About
 # ===========================
+
+
+class JourneyInline(admin.TabularInline):
+    model = ProfessionalJourney
+    extra = 0
+    fields = ("title", "company", "start_date", "end_date", "description")
+
+
+class TechnicalArsenalInline(admin.TabularInline):
+    model = TechnicalArsenal
+    extra = 0
+    fields = ("icon", "title")
+    autocomplete_fields = ("icon",)
+    show_change_link = True
+    show_full_result_link = True
+
+class TestimonialInline(admin.TabularInline):
+    model = Testimonials
+    extra = 0
+    fields = ("author", "email", "position", "text", )
 
 @admin.register(Testimonials)
 class TestimonialsAdmin(admin.ModelAdmin):
@@ -146,14 +170,5 @@ class AboutAdmin(admin.ModelAdmin):
     list_display = ("lang", "about_title")
     search_fields = ("about_title", "about_text")
     autocomplete_fields = ("lang",)
-    filter_horizontal = (
-        "professional_journey",
-        "technical_arsenal",
-        "core_value",
-        "testimonials",
-    )
+    inlines = [JourneyInline, TechnicalArsenalInline, TestimonialInline, ]
 
-    class Media:
-        # Include optional custom CSS/JS for admin tweaks (if you add them later)
-        css = {"all": ("portfolio/css/admin_custom.css",)}
-        js = ("portfolio/js/admin_custom.js",)
