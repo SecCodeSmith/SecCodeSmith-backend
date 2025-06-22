@@ -130,7 +130,11 @@ class PostPageViewEndpoint(APIView):
                     {
                         'title': post.title,
                         'slug': post.slug,
-                        'author': post.author.name,
+                        'author': {
+                            'name' : post.author.name,
+                            'bio': post.author.bio,
+                            'avatar': post.author.avatar.url,
+                        },
                         'publish_at': post.published_at.strftime("%d-%m-%Y"),
                         'comments': post.comment_count,
                         'featured': post.featured,

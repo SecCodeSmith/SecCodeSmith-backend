@@ -42,9 +42,14 @@ class SocialLinksAdmin(admin.ModelAdmin):
         "contact_pages",
         "about_pages",
     )
+    autocomplete_fields = ("icon_class",)
     list_filter = ("footer", "contact_pages", "about_pages")
     search_fields = ("name", "url")
 
+class CommentInline(admin.TabularInline):
+    model = FAQ
+    extra = 0
+    fields = ("question", "answer",)
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
@@ -52,6 +57,7 @@ class ContactAdmin(admin.ModelAdmin):
     list_filter = ("language",)
     search_fields = ("email", "business_email", "phone")
     autocomplete_fields = ("language",)
+    inlines = [CommentInline]
 
 
 # ===========================

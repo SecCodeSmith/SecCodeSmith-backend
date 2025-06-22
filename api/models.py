@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import URLValidator
+from api.validator import *
 
 class IconsClass(models.Model):
     """
@@ -35,10 +37,11 @@ class SocialLinks(models.Model):
         help_text=_("Name of the social link (e.g., GitHub, LinkedIn)"),
     )
 
-    url = models.URLField(
+    url = models.CharField(
         max_length=200,
         verbose_name=_("URL"),
         help_text=_("URL of the social link"),
+        validators=[validate_url_or_mailto,]
     )
 
     icon_class = models.ForeignKey(
@@ -171,8 +174,6 @@ class FAQ(models.Model):
     contact = models.ForeignKey(Contact,
                                 on_delete=models.CASCADE,
                                 verbose_name=_('Contact'),)
-    language = models.ForeignKey(Lang, on_delete=models.SET_NULL,
-                                 null=True, blank=True)
     class Meta:
         verbose_name = _('FAQ')
         verbose_name_plural = _('FAQs')
@@ -188,7 +189,7 @@ class ProfessionalJourney(models.Model):
     company = models.CharField(_("Company name"), max_length=100)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField(_("Description"))
+    description = models.TextField(_("Description"), blank=True, null=True)
 
     @property
     def duration(self):
@@ -241,6 +242,7 @@ class About(models.Model):
     Model for About in diffrent languages
     """
     about_title = models.CharField(_("About Title"), max_length=100)
+    sub_title = models.CharField(_("Sub Title"), max_length=100)
     about_text = models.TextField(_("About Text"))
     lang = models.OneToOneField(Lang,
                              on_delete=models.CASCADE,
@@ -252,4 +254,7 @@ class About(models.Model):
 
     class Meta:
         verbose_name = _('About')
+
+    def __str__(self):
+        return self.about_title
 

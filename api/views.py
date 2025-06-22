@@ -136,7 +136,7 @@ class ContactPage(APIView):
         try:
             contact = Contact.objects.get(language=lang)
             socials = SocialLinks.objects.filter(contact_pages=True).all()
-            faq = FAQ.objects.filter(language=lang).all()
+            faq = FAQ.objects.filter(contact=contact).all()
 
             data = {
                 'email': contact.email,
