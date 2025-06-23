@@ -114,6 +114,7 @@ class ProfessionalJourneyAdmin(admin.ModelAdmin):
     list_display = ("title", "company", "start_date", "end_date", "duration")
     search_fields = ("title", "company", "description")
     list_filter = ("company", "start_date", "end_date")
+    sortable_by = ("title", "company", "start_date", "end_date")
     date_hierarchy = "start_date"
 
 
@@ -159,6 +160,12 @@ class TestimonialInline(admin.TabularInline):
     extra = 0
     fields = ("author", "email", "position", "text", )
 
+class CoreValueInline(admin.TabularInline):
+    model = CoreValue
+    extra = 0
+    fields = ("title", "icon", "description", "about")
+    autocomplete_fields = ("icon",)
+
 @admin.register(Testimonials)
 class TestimonialsAdmin(admin.ModelAdmin):
     list_display = ("author", "email", "position")
@@ -170,5 +177,6 @@ class AboutAdmin(admin.ModelAdmin):
     list_display = ("lang", "about_title")
     search_fields = ("about_title", "about_text")
     autocomplete_fields = ("lang",)
-    inlines = [JourneyInline, TechnicalArsenalInline, TestimonialInline, ]
+    inlines = [JourneyInline, TechnicalArsenalInline,
+               TestimonialInline, CoreValueInline]
 

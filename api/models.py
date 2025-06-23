@@ -175,6 +175,8 @@ class About(models.Model):
     about_title = models.CharField(_("About Title"), max_length=100)
     sub_title = models.CharField(_("Sub Title"), max_length=100)
     about_text = models.TextField(_("About Text"))
+    image = models.ImageField(_("About Image"),
+                              null=True, blank=True)
     lang = models.OneToOneField(Lang,
                              on_delete=models.CASCADE,
                              related_name='about_lang')
@@ -212,6 +214,7 @@ class ProfessionalJourney(models.Model):
     class Meta:
         verbose_name = _('Professional Journey')
 
+
     def __str__(self):
         return self.title
 
@@ -222,7 +225,7 @@ class TechnicalArsenal(models.Model):
     icon = models.ForeignKey(IconsClass, on_delete=models.CASCADE)
     title = models.CharField(_("Technical Arsenal Title"), max_length=100)
     about = models.ForeignKey(About, on_delete=models.CASCADE,
-                              verbose_name=_('Technical Arsenal Skill'), null=True)
+                              verbose_name=_('Technical Arsenal Skill'))
 
     def __str__(self):
         return self.title
@@ -230,7 +233,7 @@ class TechnicalArsenal(models.Model):
 class TechnicalArsenalSkill(models.Model):
     text = models.CharField(_('Technical Arsenal Skill'), max_length=100)
     technical_arsenal = models.ForeignKey(TechnicalArsenal, on_delete=models.CASCADE,
-                              verbose_name=_('Technical Arsenal Skill'), null=True)
+                              verbose_name=_('Technical Arsenal Skill'))
     class Meta:
         verbose_name = _('Technical Arsenal Skill')
 
@@ -246,7 +249,7 @@ class Testimonials(models.Model):
     position = models.CharField(_("Position"), max_length=100)
     text = models.TextField(_("Text"))
     about = models.ForeignKey(About, on_delete=models.CASCADE,
-                              verbose_name=_('Technical Arsenal Skill'), null=True)
+                              verbose_name=_('Technical Arsenal Skill'))
 
 class CoreValue(models.Model):
     """
@@ -254,12 +257,12 @@ class CoreValue(models.Model):
     """
     title = models.CharField(_('title'), max_length=100)
     icon = models.ForeignKey(IconsClass,
-                             on_delete=models.PROTECT,
+                             on_delete=models.CASCADE,
                              verbose_name=_('icon'))
     description = models.TextField(_('description'))
 
     about = models.ForeignKey(About, on_delete=models.CASCADE,
-                              verbose_name=_('Core value about'), null=True)
+                              verbose_name=_('Core value about'))
 
     class Meta:
         verbose_name = _('core value')

@@ -92,14 +92,14 @@ class AboutPageViewTests(APITestCase):
             name="SampleIcon", class_name="fas fa-sample", description="Sample icon"
         )
 
-        self.testimonial = Testimonials.objects.create(
-            author="Jane Smith", email="jane@example.com", position="CTO", text="Excellent!"
-        )
-
         self.about = About.objects.create(
             about_title="About Me Section",
             about_text="I am a full‐stack developer.",
             lang=self.lang_en,
+        )
+
+        self.testimonial = Testimonials.objects.create(
+            author="Jane Smith", email="jane@example.com", position="CTO", text="Excellent!", about=self.about
         )
 
         self.tech_arsenal = TechnicalArsenal.objects.create(
@@ -171,6 +171,7 @@ class AboutPageViewTests(APITestCase):
         payload = json.loads(response.text)
         expected_top_keys = {
             "title",
+            "subtitle",
             "text",
             "language",
             "professional_journal",
@@ -209,7 +210,7 @@ class AboutPageViewTests(APITestCase):
         cv_item = cv_list[0]
         self.assertEqual(cv_item["title"], self.core_value.title)
         self.assertEqual(cv_item["icon"], self.core_value.icon.class_name)
-        self.assertEqual(cv_item["descriptions"], self.core_value.description)
+        self.assertEqual(cv_item["description"], self.core_value.description)
 
         tst_list = payload["testimonials"]
         self.assertIsInstance(tst_list, list)

@@ -58,7 +58,9 @@ class AboutPage(APIView):
 
         try:
             about = About.objects.get(lang=lang)
-            professional_journey = ProfessionalJourney.objects.filter(about=about).all()
+            professional_journey = (ProfessionalJourney.objects.filter(about=about)
+                                    .order_by('-end_date', '-start_date')
+                                    .all())
             technical_arsenal = TechnicalArsenal.objects.filter(about=about).all()
             core_value = CoreValue.objects.filter(about=about).all()
             testimonials = Testimonials.objects.filter(about=about).all()
@@ -68,12 +70,14 @@ class AboutPage(APIView):
 
         data = {
             'title': about.about_title,
+            'subtitle': about.sub_title,
             'text': about.about_text,
             'language': lang.name or "",
             'professional_journal': [
                 {
                     'title': item.title,
                     'description': item.description,
+                    'company': item.company,
                     'duration': item.duration
                 } for item in professional_journey
             ],
@@ -90,7 +94,7 @@ class AboutPage(APIView):
                 {
                     'title': value.title,
                     'icon': value.icon.class_name,
-                    'descriptions': value.description,
+                    'description': value.description,
                 } for value in core_value
             ],
             'testimonials': [
