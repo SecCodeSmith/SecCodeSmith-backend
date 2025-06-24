@@ -7,6 +7,7 @@ from rest_framework import status, permissions
 from rest_framework.views import APIView
 
 from BlogApi.models import Post, Tag, Category
+from BlogApi.untils import filter_posts
 
 
 class PostViewsEndpoint(APIView):
@@ -86,9 +87,18 @@ class RelatedPostsViewsEndpoint(APIView):
 class PostPagesCountEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request, post_per_page=6):
+
+        filt_json = request.GET.get('filter')
+
         try:
-            count = (Post.objects
-                     .filter(published_at__gte=timezone.now()).count() / post_per_page)
+
+
+            posts = Post.objects.filter(published_at__gte=timezone.now())
+
+            if filt_json:
+                posts = filter_posts(posts, filt_json)
+
+            count = int(posts.count() / post_per_page)
 
             return JsonResponse({'count': count},status=status.HTTP_200_OK)
 
@@ -109,18 +119,11 @@ class PostPageViewEndpoint(APIView):
         try:
             posts = (Post.objects.
                     filter(published_at__lte=timezone.now()).
-                     order_by('-published_at').all())
+                     order_by('-published_at'))
             if filt_json:
-                filt_json = json.loads(filt_json)
+                posts = filter_posts(posts, filt_json)
 
-                if 'title' in filt_json and filt_json['title'] != '':
-                    posts = posts.filter(title__icontains=filt_json['title'])
-                if 'tags' in filt_json:
-                    for slug in filt_json['tags']:
-                        posts = posts.filter(tags__slug=slug)
-                if 'category' in filt_json and filt_json['category'] != '':
-                    posts = posts.filter(category__slug=filt_json['category'])
-
+            posts = posts.all()
 
             page = posts[(per_page * (page_number - 1)):(per_page * page_number)]
 

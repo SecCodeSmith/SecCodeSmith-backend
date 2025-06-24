@@ -1,5 +1,7 @@
+from django.contrib import admin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.html import format_html
 from django.core.validators import URLValidator
 from api.validator import *
 
@@ -175,17 +177,36 @@ class About(models.Model):
     about_title = models.CharField(_("About Title"), max_length=100)
     sub_title = models.CharField(_("Sub Title"), max_length=100)
     about_text = models.TextField(_("About Text"))
-    image = models.ImageField(_("About Image"),
-                              null=True, blank=True)
+    image_title = models.CharField(_("Image Title"),
+                                   max_length=100,
+                                   default="The Master Behind the Mask")
+    image = models.ImageField(_("About Image"),)
     lang = models.OneToOneField(Lang,
                              on_delete=models.CASCADE,
                              related_name='about_lang')
+    technical_arsenal_title = models.CharField(_("Technical Arsenal Title"),
+                                               max_length=100, default="Arsenal of Expertise")
+    core_value_title = models.CharField(_("Core Value Title"), max_length=100,
+                                        default="Forging Principles")
+    professional_journal_title = models.CharField(_("Professional Journal Title"), max_length=100,
+                                                  default="The Smith's Journey")
+    testimonials_title = models.CharField(_("Testimonials Title"), max_length=100,
+                                          default="Testimonials")
+
 
     class Meta:
         verbose_name = _('About')
 
     def __str__(self):
         return self.about_title
+
+    @admin.display
+    def image_tag(self):
+        return format_html('<img src="{}" alt={} height="100" />',
+                           self.image.url, self.about_title)
+
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
 
 class ProfessionalJourney(models.Model):
     """
@@ -198,7 +219,6 @@ class ProfessionalJourney(models.Model):
     description = models.TextField(_("Description"), blank=True, null=True)
     about = models.ForeignKey(About, on_delete=models.CASCADE,
                               verbose_name=_('About_ProfessionalJourney'), null=True)
-
 
     @property
     def duration(self):

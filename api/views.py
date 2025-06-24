@@ -73,6 +73,8 @@ class AboutPage(APIView):
             'subtitle': about.sub_title,
             'text': about.about_text,
             'language': lang.name or "",
+            'image': about.image.url,
+            'professional_journal_title': about.professional_journal_title,
             'professional_journal': [
                 {
                     'title': item.title,
@@ -81,6 +83,7 @@ class AboutPage(APIView):
                     'duration': item.duration
                 } for item in professional_journey
             ],
+            'technical_arsenal_title': about.technical_arsenal_title,
             'technical_arsenal': [
                 {
                     'icon': item.icon.class_name,
@@ -90,6 +93,7 @@ class AboutPage(APIView):
                     ]
                 } for item in technical_arsenal
             ],
+            'core_values_title': about.core_value_title,
             'core_values': [
                 {
                     'title': value.title,
@@ -97,6 +101,7 @@ class AboutPage(APIView):
                     'description': value.description,
                 } for value in core_value
             ],
+            'testimonials_title': about.testimonials_title,
             'testimonials': [
                 {
                     'author': testimonial.author,
