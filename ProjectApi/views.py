@@ -10,9 +10,13 @@ from ProjectApi.models import *
 class ProjectsEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def get(self, request):
-
+        cat = request.GET.get('cat')
         try:
-            projects = Project.objects.all()
+            projects = Project.objects.order_by('-pk')
+
+            if cat:
+                projects = projects.filter(category__short=cat)
+            projects = projects.all()
 
             data = [
                 {
@@ -99,6 +103,7 @@ class ProjectCategoryEndpoint(APIView):
                 {
                     'name': category.category_name,
                     'short': category.short,
+                    'icon': category.icon.class_name,
                     'countOfProject': Project.objects.filter(category=category).count(),
                 } for category in cat
             ]

@@ -126,5 +126,8 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectCategory)
 class ProjectCategoryAdmin(admin.ModelAdmin):
-    list_display = ('category_name',)
+    list_display = ('category_name', 'short')
     search_fields = ('category_name',)
+    autocomplete_fields = ('icon',)
+    prepopulated_fields = {'short': ('category_name',)}
+    ordering = ('short', )

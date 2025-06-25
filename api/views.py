@@ -74,6 +74,7 @@ class AboutPage(APIView):
             'text': about.about_text,
             'language': lang.name or "",
             'image': about.image.url,
+            'image_title': about.image_title,
             'professional_journal_title': about.professional_journal_title,
             'professional_journal': [
                 {

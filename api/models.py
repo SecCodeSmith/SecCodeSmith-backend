@@ -191,7 +191,7 @@ class About(models.Model):
     professional_journal_title = models.CharField(_("Professional Journal Title"), max_length=100,
                                                   default="The Smith's Journey")
     testimonials_title = models.CharField(_("Testimonials Title"), max_length=100,
-                                          default="Testimonials")
+                                          default="Tales from the Guild")
 
 
     class Meta:

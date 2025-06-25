@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from django.utils.html import format_html
+from django.utils.text import slugify
 
 from api.models import IconsClass
 
@@ -9,7 +10,15 @@ class ProjectCategory(models.Model):
     Model for project categories
     """
     category_name = models.CharField(max_length=200, unique=True)
+    icon = models.ForeignKey(IconsClass, on_delete=models.PROTECT, null=True, blank=True)
     short = models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.category_name
+
+    def save(self, *args, **kwargs):
+        if not self.short:
+            self.short = slugify(self.category_name)
 
 class Project(models.Model):
     """
