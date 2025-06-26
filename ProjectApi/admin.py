@@ -13,7 +13,7 @@ from .models import (
     ProjectDetail,
     Project,
     ProjectGallery,
-    KeyFeatures,
+    KeyFeatures, ProjectTechnology,
 )
 
 
@@ -27,16 +27,17 @@ class ProjectGalleryInline(admin.TabularInline):
     model = ProjectGallery
     extra = 1
     ordering = ['id']
+    readonly_fields = ['image_tag']
 
 
 class ProjectDetailInline(admin.StackedInline):
     model = ProjectDetail
     extra = 1
+    max_num = 1
     ordering = ['-start_date']
     fields = (
         'client',
         'role',
-        'status',
         'start_date',
         'end_date',
         'full_description',
@@ -55,11 +56,12 @@ class ProjectAdmin(admin.ModelAdmin):
         'demo_url',
         'documents_url',
         'get_status',
+        'image_tag',
     )
+    readonly_fields = ('image_tag',)
     list_filter = (
         'feathered',
         'category',
-        'projectdetail__status',
     )
     search_fields = (
         'title',
@@ -71,7 +73,7 @@ class ProjectAdmin(admin.ModelAdmin):
         'category',
         'main_technologies',
     )
-    inlines = [ProjectDetailInline, KeyFeaturesInline, ProjectGalleryInline]
+    inlines = [KeyFeaturesInline, ProjectGalleryInline, ProjectDetailInline]
     list_select_related = ()
     prefetch_related = ('category', 'projectdetail_set')
 
@@ -131,3 +133,8 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
     autocomplete_fields = ('icon',)
     prepopulated_fields = {'short': ('category_name',)}
     ordering = ('short', )
+
+@admin.register(ProjectTechnology)
+class ProjectTechnologyAdmin(admin.ModelAdmin):
+    list_display = ('icon', 'name',)
+    autocomplete_fields = ('icon',)

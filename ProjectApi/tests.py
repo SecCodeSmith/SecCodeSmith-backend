@@ -20,8 +20,18 @@ class ProjectViewsTest(TestCase):
             icon=self.icon,
         )
 
-        self.tech1 = IconsClass.objects.create(name="Django", class_name="django-icon")
-        self.tech2 = IconsClass.objects.create(name="React", class_name="react-icon")
+        self.icon = IconsClass.objects.create(name="Django", class_name="django-icon")
+        self.icon2 = IconsClass.objects.create(name="React", class_name="react-icon")
+
+        self.tech1 = ProjectTechnology.objects.create(
+            icon=self.icon,
+            name="Django",
+        )
+
+        self.tech2 = ProjectTechnology.objects.create(
+            icon=self.icon2,
+            name="React",
+        )
 
 
         image_file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
@@ -43,7 +53,6 @@ class ProjectViewsTest(TestCase):
             start_date=timezone.now().date(),
             end_date=None,
             role="Developer",
-            status="In Progress",
             client="Test Client",
             project=self.project,
 

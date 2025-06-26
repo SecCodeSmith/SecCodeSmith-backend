@@ -1,9 +1,8 @@
-from django.shortcuts import render
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from BlogApi.models import Category, Tag
+from BlogApi.models import Category
 from ProjectApi.models import *
 
 
@@ -28,7 +27,7 @@ class ProjectsEndpoint(APIView):
                     'featured': project.feathered,
                     'technologies': [
                         {
-                            'name': tech.name, 'icon': tech.class_name
+                            'name': tech.name, 'icon': tech.icon.class_name
                         } for tech in project.main_technologies.all()
                     ],
                     'github': project.github_url,
@@ -60,7 +59,7 @@ class ProjectDetailEndpoint(APIView):
                 'featured': project.feathered,
                 'technologies': [
                     {
-                        'name': tech.name, 'icon': tech.class_name
+                        'name': tech.name, 'icon': tech.icon.class_name
                     } for tech in project.main_technologies.all()
                 ],
                 'github': project.github_url,
@@ -72,7 +71,6 @@ class ProjectDetailEndpoint(APIView):
                     'end_date': project_details.end_date,
                     'date_format': '',
                     'role': project_details.role,
-                    'status': project_details.status,
                     'client': project_details.client,
                     'key_features': [
                        feature.name for feature in KeyFeatures.objects.filter(project=project).all()
@@ -83,7 +81,7 @@ class ProjectDetailEndpoint(APIView):
                     'full_tech_stack': [
                         {
                             'name': tech.name,
-                            'icon': tech.class_name,
+                            'icon': tech.icon.class_name,
                         } for tech in project_details.full_technologies.all()
                     ]
                 }

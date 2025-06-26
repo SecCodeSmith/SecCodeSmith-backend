@@ -22,6 +22,15 @@ class ProjectCategory(models.Model):
             self.short = slugify(self.category_name)
         super().save(*args, **kwargs)
 
+class ProjectTechnology(models.Model):
+    icon = models.ForeignKey(IconsClass, on_delete=models.SET_NULL,
+                             null=True, blank=True)
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
     """
     Model for project data.
@@ -31,7 +40,7 @@ class Project(models.Model):
     image = models.ImageField(upload_to='project/')
     category = models.ManyToManyField(ProjectCategory)
     feathered = models.BooleanField(default=False)
-    main_technologies = models.ManyToManyField(IconsClass,
+    main_technologies = models.ManyToManyField(ProjectTechnology,
                                                related_name='main_technologies')
     github_url = models.URLField(null=True, blank=True)
     demo_url = models.URLField(null=True, blank=True)
@@ -55,13 +64,11 @@ class ProjectDetail(models.Model):
     full_description = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
-    role = models.CharField(max_length=100)
-    status = models.CharField(max_length=100)
-    client = models.CharField(max_length=100)
-    full_technologies = models.ManyToManyField(IconsClass,
-                                               related_name='full_technologies')
-    project = models.ForeignKey(Project, on_delete=models.CASCADE,
-                                blank=True, null=True)
+    role = models.CharField(max_length=100, null=True, blank=True)
+    client = models.CharField(max_length=100, default='Internal Project')
+    full_technologies = models.ManyToManyField(ProjectTechnology,
+                                               related_name='full_technologies', blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 class ProjectGallery(models.Model):
     """
