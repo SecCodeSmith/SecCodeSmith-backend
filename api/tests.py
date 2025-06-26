@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from rest_framework import status
@@ -88,6 +89,12 @@ class AboutPageViewTests(APITestCase):
             language=self.lang_en,
         )
 
+        self.sample_file = SimpleUploadedFile(
+            name='test.jpg',
+            content=b'file_content',
+            content_type='image/jpeg'
+        )
+
         self.icon = IconsClass.objects.create(
             name="SampleIcon", class_name="fas fa-sample", description="Sample icon"
         )
@@ -96,6 +103,7 @@ class AboutPageViewTests(APITestCase):
             about_title="About Me Section",
             about_text="I am a full‐stack developer.",
             lang=self.lang_en,
+            image=self.sample_file,
         )
 
         self.testimonial = Testimonials.objects.create(
@@ -129,6 +137,10 @@ class AboutPageViewTests(APITestCase):
             self.about.testimonials.add(self.testimonial)
         except Exception:
             pass
+
+    def tearDown(self):
+        self.about.image.delete(save=False)
+        super(APITestCase, self).tearDown()
 
     def test_get_when_no_about_returns_404(self):
         """
@@ -172,11 +184,17 @@ class AboutPageViewTests(APITestCase):
         expected_top_keys = {
             "title",
             "subtitle",
+            "image",
+            "image_title",
             "text",
             "language",
             "professional_journal",
+            "professional_journal_title",
             "technical_arsenal",
+            "technical_arsenal_title",
+            "core_values_title",
             "core_values",
+            "testimonials_title",
             "testimonials",
             "about_social_links",
         }

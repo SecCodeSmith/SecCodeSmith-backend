@@ -11,8 +11,15 @@ from api.models import IconsClass
 class ProjectViewsTest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.icon = IconsClass.objects.create(
+            name="GitHub",
+            class_name="fab fa-github"
+        )
+        self.category = ProjectCategory.objects.create(
+            category_name="Web Development",
+            icon=self.icon,
+        )
 
-        self.category = ProjectCategory.objects.create(category_name="Web Development")
         self.tech1 = IconsClass.objects.create(name="Django", class_name="django-icon")
         self.tech2 = IconsClass.objects.create(name="React", class_name="react-icon")
 
@@ -29,6 +36,8 @@ class ProjectViewsTest(TestCase):
             documents_url="https://docs.test",
         )
 
+        self.project.category.add(self.category)
+
         self.project_detail = ProjectDetail.objects.create(
             full_description="Project description",
             start_date=timezone.now().date(),
@@ -37,9 +46,9 @@ class ProjectViewsTest(TestCase):
             status="In Progress",
             client="Test Client",
             project=self.project,
+
         )
 
-        self.project.category.add(self.category)
         self.project.main_technologies.add(self.tech1)
         self.project_detail.full_technologies.add(self.tech1, self.tech2)
 

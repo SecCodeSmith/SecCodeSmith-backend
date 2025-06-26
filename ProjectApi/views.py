@@ -103,7 +103,7 @@ class ProjectCategoryEndpoint(APIView):
                 {
                     'name': category.category_name,
                     'short': category.short,
-                    'icon': category.icon.class_name,
+                    'icon': category.icon.class_name if category.icon else "",
                     'countOfProject': Project.objects.filter(category=category).count(),
                 } for category in cat
             ]
