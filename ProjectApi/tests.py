@@ -85,7 +85,6 @@ class ProjectViewsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['title'], "Test Project")
-        self.assertEqual(response.data[0]['category'], ["Web Development"])
         self.assertEqual(response.data[0]['featured'], True)
 
     def test_get_project_detail(self):

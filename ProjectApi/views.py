@@ -70,10 +70,10 @@ class ProjectDetailEndpoint(APIView):
                 'demo': project.demo_url,
                 'documentation': project.documents_url,
                 'project_details': {
-                    'descriptions': project_details.full_description,
-                    'start_date': project_details.start_date,
-                    'end_date': project_details.end_date,
-                    'date_format': '',
+                    'descriptions': project_details.full_description.split('\n'),
+                    'start_date': project_details.start_date.strftime('%d/%m/%Y'),
+                    'end_date': project_details.end_date.strftime('%d/%m/%Y'),
+                    'date_format': '%d/%m/%Y',
                     'role': project_details.role,
                     'client': project_details.client,
                     'key_features': [
