@@ -14,6 +14,7 @@ class ProjectCategory(models.Model):
                              null=True, blank=True)
     short = models.CharField(max_length=10, unique=True)
 
+
     def __str__(self):
         return self.category_name
 
@@ -63,6 +64,7 @@ class ProjectDetail(models.Model):
     """
     full_description = models.TextField()
     start_date = models.DateField()
+    status = models.CharField(max_length=100, default='Active')
     end_date = models.DateField(blank=True, null=True)
     role = models.CharField(max_length=100, null=True, blank=True)
     client = models.CharField(max_length=100, default='Internal Project')
@@ -91,4 +93,7 @@ class KeyFeatures(models.Model):
     Model for key features
     """
     name = models.CharField(max_length=200)
-    project = models.OneToOneField(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name

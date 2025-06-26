@@ -23,7 +23,11 @@ class ProjectsEndpoint(APIView):
                     'title': project.title,
                     'description': project.description,
                     'image': project.image.url,
-                    'category': [cat.category_name for cat in project.category.all()],
+                    'category': [{
+                        'name': cat.category_name,
+                        'short': cat.short,
+                        'icon': cat.icon.class_name,
+                    }for cat in project.category.all()],
                     'featured': project.feathered,
                     'technologies': [
                         {

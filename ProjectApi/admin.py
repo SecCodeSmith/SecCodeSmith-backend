@@ -21,6 +21,8 @@ class KeyFeaturesInline(admin.TabularInline):
     model = KeyFeatures
     extra = 1
     ordering = ['name']
+    ordering = ['id', ]
+
 
 
 class ProjectGalleryInline(admin.TabularInline):
@@ -42,6 +44,7 @@ class ProjectDetailInline(admin.StackedInline):
         'end_date',
         'full_description',
         'full_technologies',
+        'status'
     )
     filter_horizontal = ('full_technologies',)
 
