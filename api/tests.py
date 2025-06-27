@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from rest_framework import status
 from api.models import *
@@ -307,5 +308,18 @@ class APITests(TestCase):
         self.assertEqual(data[0]["categoryTitle"], "Frontend")
         self.assertEqual(data[0]["skills"][0]["name"], "JavaScript")
 
+class TestMessagesViewTests(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.url = reverse("contact")
 
-
+    def test_messages_view(self):
+        data = {
+            'name': 'Jon Wick',
+            'email': 'jon@example.pl',
+            'subject': 'Hello World!',
+            'projectType': 'Hotel continental',
+            'message': 'One coin',
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

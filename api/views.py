@@ -1,3 +1,5 @@
+from sqlite3 import IntegrityError
+
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework import permissions, status
@@ -175,3 +177,26 @@ class ContactPage(APIView):
             return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
         except Contact.DoesNotExist:
             return JsonResponse({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ContactFormEndpoint(APIView):
+    permission_classes = (permissions.AllowAny,)
+    def post(self, request):
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        project_type = request.POST.get('projectType')
+        message = request.POST.get('message')
+        budget = request.POST.get('budget')
+        try:
+            Message.objects.create(
+                name=name,
+                email=email,
+                subject=subject,
+                project_type=project_type,
+                message=message,
+                budget=budget,
+            ).save()
+
+            return JsonResponse({'message': 'Message created'}, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return JsonResponse(status=status.HTTP_400_BAD_REQUEST)

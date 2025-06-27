@@ -290,3 +290,18 @@ class CoreValue(models.Model):
 
     def __str__(self):
         return "Title: {} Text: {}".format(self.title, self.description)
+
+class Message(models.Model):
+    name = models.CharField(_("Name"), max_length=100)
+    email = models.EmailField(_("Email"), max_length=100)
+    subject = models.CharField(_("Subject"), max_length=100)
+    project_type = models.CharField(_("Project Type"), max_length=100)
+    message = models.TextField(_("Message"))
+    budget = models.CharField(_("Budget"), max_length=100)
+
+    class Meta:
+        verbose_name = _('message')
+        verbose_name_plural = _('messages')
+
+    def __str__(self):
+        return self.name

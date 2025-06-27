@@ -72,7 +72,7 @@ class ProjectDetailEndpoint(APIView):
                 'project_details': {
                     'descriptions': project_details.full_description.split('\n'),
                     'start_date': project_details.start_date.strftime('%d/%m/%Y'),
-                    'end_date': project_details.end_date.strftime('%d/%m/%Y'),
+                    'end_date': project_details.end_date.strftime('%d/%m/%Y') if project_details.end_date is not None else None,
                     'date_format': '%d/%m/%Y',
                     'role': project_details.role,
                     'client': project_details.client,
