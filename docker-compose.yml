@@ -1,0 +1,20 @@
+services:
+  redis:
+    image: redis:8.2-rc1-alpine
+    container_name: redis-Backend
+    hostname: redis
+    networks:
+      - redis-net
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+
+
+
+networks:
+  redis-net:
+      ipam:
+        driver: bridge
+        config:
+          - subnet: 127.0.1.0/24
+            gateway: 127.0.1.1
