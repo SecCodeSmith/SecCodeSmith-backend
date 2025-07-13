@@ -5,16 +5,55 @@ services:
     hostname: redis
     networks:
       - redis-net
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+        REDIS_PASSWORD: "${REDIS_PASSWORD}"
     volumes:
-      - ./redis.conf:/etc/redis/redis.conf
+      - ./redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
 
+  postgres:
+    image: postgres:9-alpine
+    container_name: DB
+    hostname: db
+    networks:
+      - db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
 
 
 networks:
   redis-net:
       ipam:
-        driver: bridge
         config:
-          - subnet: 127.0.1.0/24
-            gateway: 127.0.1.1
+          - subnet: 172.25.1.0/24
+            gateway: 172.25.1.1
+  db:
+    ipam:
+      config:
+        - subnet: 172.25.2.0/24
+          gateway: 172.25.2.1
+
+volumes:
+  postgres_data:
