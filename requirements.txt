@@ -13,5 +13,7 @@ django-extensions==4.1
 
 pytest-django>=4.8.0
 django-debug-toolbar>=4.4.0
+redis==6.2.0
+hiredis==3.2.1
 # flake8>=7.0.0
 # black>=24.0.0

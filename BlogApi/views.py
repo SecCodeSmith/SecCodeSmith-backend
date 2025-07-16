@@ -3,6 +3,8 @@ from datetime import timezone
 
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 
@@ -12,6 +14,8 @@ from BlogApi.untils import filter_posts
 
 class PostViewsEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
+
+    @method_decorator(cache_page(60))
     def get(self,request, slug=None):
         """
         Get post details

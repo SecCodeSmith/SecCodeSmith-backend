@@ -1,5 +1,7 @@
 from sqlite3 import IntegrityError
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework import permissions, status
@@ -21,6 +23,7 @@ class CSRFTokenView(APIView):
 class SkillCards(APIView):
     permission_classes = (permissions.AllowAny,)
 
+    @method_decorator(cache_page(60))
     def get(self, request):
         """
         Returns a list of all available skills card.
@@ -48,6 +51,7 @@ class SkillCards(APIView):
 class AboutPage(APIView):
     permission_classes = (permissions.AllowAny,)
 
+    @method_decorator(cache_page(60))
     def get(self, request, lang_arg = None):
         """
         Returns an About section of the website in specified language.
@@ -126,6 +130,8 @@ class AboutPage(APIView):
 
 class SocialLinksFooter(APIView):
     permission_classes = (permissions.AllowAny,)
+
+    @method_decorator(cache_page(60))
     def get(self, request):
         socials = SocialLinks.objects.filter(footer=True).all()
 
@@ -143,6 +149,8 @@ class SocialLinksFooter(APIView):
 
 class ContactPage(APIView):
     permission_classes = (permissions.AllowAny,)
+
+    @method_decorator(cache_page(60))
     def get(self, request, lang_arg = None):
         try:
             lang = Lang.objects.get(iso_code=lang_arg)
