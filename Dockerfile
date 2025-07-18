@@ -18,6 +18,10 @@ ENV REDIS_PORT="6379"
 ENV REDIS_PASSWORD="Password"
 ENV PAGE_CASHE_TIME=900
 
+ENV DJANGO_SUPERUSER_USERNAME="admin"
+ENV DJANGO_SUPERUSER_PASSWORD="admin"
+ENV DJANGO_SUPERUSER_EMAIL="admin@local"
+
 RUN apk add --update --no-cache python3 \
     py3-pip build-base libffi-dev postgresql-dev \
     bash \

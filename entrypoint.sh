@@ -12,6 +12,9 @@ fi
 echo "Applying database migrations"
 python manage.py migrate --noinput
 
+echo "Create admin account"
+python manage.py createsuperuser --no-input
+
 echo "Collecting static files"
 python manage.py collectstatic --noinput
 

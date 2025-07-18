@@ -1,5 +1,7 @@
 import mimetypes
+import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,6 +9,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+env = environ.Env(
+    DEBUG=(bool, False),
+    DATABASE_TYPE=(str, 'pgsql'),
+    DATABASE_USER=(str, 'postgres'),
+    DATABASE_PASSWORD=(str, 'postgres'),
+    DATABASE_HOST=(str, 'localhost'),
+    DATABASE_PORT=(int, '5432'),
+    DATABASE_NAME=(str, 'backend'),
+    EMAIL_HOST=(str, ''),
+    EMAIL_USER=(str, ''),
+    EMAIL_PASSWORD=(str, ''),
+    EMAIL_USE_TLS=(bool, False),
+    EMAIL_USE_SSL=(bool, False),
+    EMAIL_FROM=(str, ''),
+    EMAIL_SMTP_PORT=(int, 25),
+    REDIS_HOST=(str, 'localhost'),
+    REDIS_PORT=(int, 6379),
+    REDIS_DB=(int, 0),
+    REDIS_PASSWORD=(str, ''),
+    PAGE_CACHE_TIMEOUT=(int, 60),
+)
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+
+if env('EMAIL_HOST') is not None and env('EMAIL_HOST') != '':
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_USER = env('EMAIL_USER')
+    EMAIL_PASSWORD = env('EMAIL_PASSWORD')
+    EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+    EMAIL_USE_SSL = env('EMAIL_USE_SSL')
+    EMAIL_FROM = env('EMAIL_FROM') or env('EMAIL_USER')
+    EMAIL_SMTP_PORT = env('EMAIL_SMTP_PORT')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p'
@@ -74,12 +111,26 @@ WSGI_APPLICATION = 'SecCodeSmithBackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+
+if env('DATABASE_TYPE') == 'pgsql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DATABASE_NAME'),
+            'USER': env('DATABASE_USER'),
+            'PASSWORD': env('DATABASE_PASSWORD'),
+            'HOST': env('DATABASE_HOST'),
+            'PORT': env('DATABASE_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 CACHES = {
     "default": {

@@ -14,12 +14,12 @@ services:
     environment:
         REDIS_PASSWORD: "${REDIS_PASSWORD}"
     volumes:
-      - ./volume/redis_data:/data
+      - redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
 
   postgres:
-    image: postgres:9-alpine
+    image: postgres:14.7-alpine
     container_name: database-Backend
     hostname: db
     profiles:
@@ -71,3 +71,4 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:
