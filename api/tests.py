@@ -150,6 +150,7 @@ class AboutPageViewTests(APITestCase):
         """
 
         About.objects.all().delete()
+        self.about.delete()
 
         request = self.factory.get(self.url)
 

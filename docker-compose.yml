@@ -46,13 +46,30 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+
     profiles:
       - full_run
-    volumes:
-      - .:/app
     depends_on:
       - postgres
       - redis
+    environment:
+      DATABASE_TYPE: $DATABASE_TYPE
+      DATABASE_HOST: db
+      DATABASE_USER: $DATABASE_USER
+      DATABASE_PASSWORD: $DATABASE_PASSWORD
+      DATABASE_NAME: $DATABASE_NAME
+      EMAIL_HOST: $EMAIL_HOST
+      EMAIL_LOGIN: $EMAIL_LOGIN
+      EMAIL_PASSWORD: $EMAIL_PASSWORD
+      EMAIL_SMTP_PORT: $EMAIL_SMTP_PORT
+      EMAIL: $EMAIL
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
+      REDIS_PASSWORD: $REDIS_PASSWORD
+      PAGE_CACHE_TIME: PAGE_CACHE_TIME
+      DJANGO_SUPERUSER_USERNAME: $DJANGO_SUPERUSER_USERNAME
+      DJANGO_SUPERUSER_PASSWORD: $DJANGO_SUPERUSER_PASSWORD
+      DJANGO_SUPERUSER_EMAIL: $DJANGO_SUPERUSER_EMAIL
     ports:
       - 8000:8000
 

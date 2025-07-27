@@ -2,6 +2,7 @@ import mimetypes
 import os
 from pathlib import Path
 import environ
+from fakeredis import FakeConnection
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,7 @@ env = environ.Env(
     REDIS_PORT=(int, 6379),
     REDIS_DB=(int, 0),
     REDIS_PASSWORD=(str, ''),
-    PAGE_CACHE_TIMEOUT=(int, 60),
+    PAGE_CACHE_TIME=(int, 60),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))

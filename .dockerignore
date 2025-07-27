@@ -1,4 +1,4 @@
-.venv
+.venv*
 Media
 README.md
 db.sqlite3

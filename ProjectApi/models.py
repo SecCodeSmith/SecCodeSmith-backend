@@ -12,7 +12,7 @@ class ProjectCategory(models.Model):
     category_name = models.CharField(max_length=200, unique=True)
     icon = models.ForeignKey(IconsClass, on_delete=models.SET_NULL,
                              null=True, blank=True)
-    short = models.CharField(max_length=10, unique=True)
+    short = models.CharField(max_length=30, unique=True)
 
 
     def __str__(self):

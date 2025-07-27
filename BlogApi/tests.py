@@ -1,6 +1,8 @@
 # tests/test_models.py
 import json
+from unittest.mock import patch
 
+import fakeredis
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework import status
@@ -331,6 +333,7 @@ class BlogApiPageTests(APITestCase):
     def tearDown(self):
         self.image.image.delete(save=False)
         self.image.delete()
+        self.patcher.stop()
 
         self.author.avatar.delete(save=False)
         self.second_author.avatar.delete(save=False)
