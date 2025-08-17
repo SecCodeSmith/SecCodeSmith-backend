@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import fakeredis
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from django.urls import reverse
@@ -398,6 +398,11 @@ class BlogApiPageTests(APITestCase):
         self.assertIn('BlogCount', payload[0])
         self.assertEqual(payload[0]['BlogCount'], 6)
 
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
 class BlogApiPageEmptyDatabaseTests(APITestCase):
     def setUp(self):
         self.posts_count = lambda count_post_on_page: \
