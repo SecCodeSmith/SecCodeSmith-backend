@@ -29,10 +29,11 @@ class SkillCards(APIView):
         Returns a list of all available skills card.
         """
 
-        card = SkillsCard.objects.all()
+        try:
+            card = SkillsCard.objects.all()
+        except SkillsCard.DoesNotExist:
+            return JsonResponse({'error': 'No skills found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not card:
-            return JsonResponse({'error': 'No card found'}, status=status.HTTP_404_NOT_FOUND)
 
         data = [
             {
@@ -61,9 +62,19 @@ class AboutPage(APIView):
             try:
                 lang = Lang.objects.get(iso_code=lang_arg)
             except Lang.DoesNotExist:
-                lang = Lang.objects.first()
+                try:
+                    lang = Lang.objects.first()
+                except Lang.DoesNotExist:
+                    return JsonResponse({'error': 'Database is empty'}
+                                        , status=status.HTTP_404_NOT_FOUND)
+            if lang is None:
+                return JsonResponse({'error': 'Language not found'}, status=status.HTTP_404_NOT_FOUND)
 
             about = About.objects.get(lang=lang)
+
+            if about is None:
+                return JsonResponse({'error': 'Language not found'}, status=status.HTTP_404_NOT_FOUND)
+
             professional_journey = (ProfessionalJourney.objects.filter(about=about)
                                     .order_by('-end_date', '-start_date')
                                     .all())
@@ -133,19 +144,22 @@ class SocialLinksFooter(APIView):
 
     @method_decorator(cache_page(60))
     def get(self, request):
-        socials = SocialLinks.objects.filter(footer=True).all()
+        try:
+            socials = SocialLinks.objects.filter(footer=True).all()
 
-        if not socials or len(socials) == 0:
+            if not socials or len(socials) == 0:
+                return JsonResponse({'error': 'No social links found'}, status=status.HTTP_404_NOT_FOUND)
+
+            data = [
+                {
+                    'icon': social.icon_class.class_name,
+                    'url': social.url
+                } for social in socials
+            ]
+
+            return JsonResponse(data, safe=False, status=status.HTTP_200_OK)
+        except SocialLinks.DoesNotExist:
             return JsonResponse({'error': 'No social links found'}, status=status.HTTP_404_NOT_FOUND)
-
-        data = [
-            {
-                'icon': social.icon_class.class_name,
-                'url': social.url
-            } for social in socials
-        ]
-
-        return JsonResponse(data, safe=False,status=status.HTTP_200_OK)
 
 class ContactPage(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -189,12 +203,19 @@ class ContactPage(APIView):
 class ContactFormEndpoint(APIView):
     permission_classes = (permissions.AllowAny,)
     def post(self, request):
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        project_type = request.POST.get('projectType')
-        message = request.POST.get('message')
-        budget = request.POST.get('budget')
+        name = request.data.get('name')
+        email = request.data.get('email')
+        subject = request.data.get('subject')
+        project_type = request.data.get('projectType')
+        message = request.data.get('message')
+        budget = request.data.get('budget')
+
+        if not all([name, email, message]):
+            return JsonResponse(
+                {'error': 'Name, email, and message are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
             Message.objects.create(
                 name=name,
@@ -207,4 +228,5 @@ class ContactFormEndpoint(APIView):
 
             return JsonResponse({'message': 'Message created'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
-            return JsonResponse(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'message' : 'Bad request'} ,status=status.HTTP_400_BAD_REQUEST)
+

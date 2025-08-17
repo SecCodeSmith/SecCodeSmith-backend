@@ -266,6 +266,11 @@ class CommentModelTests(TestCase):
         self.assertEqual(comment.content, "Hello world!")
         self.assertEqual(comment.post, self.post)
 
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
 class BlogApiPageTests(APITestCase):
     def setUp(self):
         self.sample_file = SimpleUploadedFile(
@@ -333,7 +338,6 @@ class BlogApiPageTests(APITestCase):
     def tearDown(self):
         self.image.image.delete(save=False)
         self.image.delete()
-        self.patcher.stop()
 
         self.author.avatar.delete(save=False)
         self.second_author.avatar.delete(save=False)

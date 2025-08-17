@@ -297,7 +297,7 @@ class Message(models.Model):
     subject = models.CharField(_("Subject"), max_length=100)
     project_type = models.CharField(_("Project Type"), max_length=100)
     message = models.TextField(_("Message"))
-    budget = models.CharField(_("Budget"), max_length=100)
+    budget = models.CharField(_("Budget"), max_length=100, null=True)
 
     class Meta:
         verbose_name = _('message')

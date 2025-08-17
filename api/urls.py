@@ -9,5 +9,5 @@ urlpatterns = [
     path('footer-links', views.SocialLinksFooter.as_view(), name='social-links-footer'),
     path('contact/<str:lang_arg>', views.ContactPage.as_view(), name='contact'),
     path('contact/', views.ContactPage.as_view(), name='contact_default'),
-    path('message/', views.ContactFormEndpoint.as_view(), name='contact'),
+    path('message/', views.ContactFormEndpoint.as_view(), name='contact_form'),
 ]

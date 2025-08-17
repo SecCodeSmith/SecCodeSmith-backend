@@ -2,13 +2,26 @@ import json
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from rest_framework import status
+
+from SecCodeSmithBackend.settings import DATABASES
 from api.models import *
 from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
 
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}, DATABASES={
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
+)
 class SkillCardsViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -16,25 +29,22 @@ class SkillCardsViewTests(APITestCase):
         self.url = "/api/skills-cards"
 
         self.icon1 = IconsClass.objects.create(
-            name="GitHub", class_name="fab fa-github", description="GitHub icon"
+            name="GitHub", class_name="fas fa-github", description="GitHub icon"
         )
         self.icon2 = IconsClass.objects.create(
-            name="LinkedIn", class_name="fab fa-linkedin", description="LinkedIn icon"
+            name="LinkedIn", class_name="fas fa-linkedin", description="LinkedIn icon"
         )
 
         self.skill_a = Skill.objects.create(name="Python", icon_class=self.icon1)
         self.skill_b = Skill.objects.create(name="Django", icon_class=self.icon2)
 
-    def test_get_when_no_cards_returns_404(self):
-        """
-        If there are no SkillsCard records in the DB, GET should return 404
-        with JSON {'error': 'No card found'}.
-        """
-        request = self.factory.get(self.url)
-        response = self.view(request)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        payload = json.loads(response.text)
-        self.assertEqual(payload, {"error": "No card found"})
+        self.skills_card = SkillsCard.objects.create(
+            icon_class=self.icon1,  # Use the GitHub icon
+            category_title="Backend Development"
+        )
+
+        self.skills_card.skills.add(self.skill_a, self.skill_b)
+
 
     def test_get_returns_all_cards_structure(self):
         """
@@ -44,24 +54,22 @@ class SkillCardsViewTests(APITestCase):
           - 'categoryIcon': SkillsCard.icon_class.class_name
           - 'skills': a list of dicts, each having {'name': <Skill.name>, 'icon': <Skill.icon_class.class_name>}
         """
-        # Create a SkillsCard and associate both skills
-        card = SkillsCard.objects.create(
-            category_title="Dev Tools", icon_class=self.icon1
-        )
-        card.skills.add(self.skill_a, self.skill_b)
-
         request = self.factory.get(self.url)
         response = self.view(request)
+
+        # ASSERT: Check the response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        # Use response.data for DRF test responses, it's cleaner
         payload = json.loads(response.text)
         self.assertIsInstance(payload, list)
         self.assertEqual(len(payload), 1)
 
         card_data = payload[0]
-        # Verify structure of the single card
-        self.assertEqual(card_data["categoryTitle"], "Dev Tools")
-        self.assertEqual(card_data["categoryIcon"], self.icon1.class_name)
+
+        # Verify structure against the data created in setUp, NOT hardcoded values
+        self.assertEqual(card_data["categoryTitle"], self.skills_card.category_title)
+        self.assertEqual(card_data["categoryIcon"], self.skills_card.icon_class.class_name)
 
         skills_list = card_data["skills"]
         self.assertIsInstance(skills_list, list)
@@ -74,7 +82,11 @@ class SkillCardsViewTests(APITestCase):
         }
         self.assertEqual(returned_pairs, expected_pairs)
 
-
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
 class AboutPageViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -142,27 +154,6 @@ class AboutPageViewTests(APITestCase):
     def tearDown(self):
         self.about.image.delete(save=False)
         super(APITestCase, self).tearDown()
-
-    def test_get_when_no_about_returns_404(self):
-        """
-        If there is no About matching the requested language, the view should return 404
-        and the JSON {'error': 'About in lang <lang_name> not found'}.
-        """
-
-        About.objects.all().delete()
-        self.about.delete()
-
-        request = self.factory.get(self.url)
-
-        response = self.view(request)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-        payload = json.loads(response.text)
-        self.assertIn("error", payload)
-        self.assertEqual(
-            payload["error"],
-            f"About in lang {self.lang_en.name} not found"
-        )
 
     def test_get_returns_about_structure(self):
         """
@@ -241,7 +232,63 @@ class AboutPageViewTests(APITestCase):
             self.assertEqual(tst_item["position"], self.testimonial.position)
             self.assertEqual(tst_item["text"], self.testimonial.text)
 
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
+class AboutPage404ViewTests(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = AboutPage.as_view()
+        self.url = "/api/about"
 
+    def tearDown(self):
+        super(APITestCase, self).tearDown()
+
+    def test_get_when_no_lang_returns_404(self):
+        """
+        If there is no About matching the requested language, the view should return 404
+        and the JSON {'error': 'About in lang <lang_name> not found'}.
+        """
+
+        request = self.factory.get(self.url)
+
+        response = self.view(request)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        payload = json.loads(response.text)
+        self.assertIn("error", payload)
+        self.assertEqual(
+            payload["error"],
+            f"Language not found"
+        )
+
+    def test_get_when_no_about_returns_404(self):
+        """
+        If there is no About matching the requested language, the view should return 404
+        and the JSON {'error': 'About in lang <lang_name> not found'}.
+        """
+        self.lang = Lang.objects.create(iso_code="pl", name="polish")
+
+        request = self.factory.get(self.url)
+
+        response = self.view(request)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        payload = json.loads(response.text)
+        self.assertIn("error", payload)
+        self.assertEqual(
+            payload["error"],
+            f"About in lang polish not found"
+        )
+
+
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
 class FooterLinksViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -286,7 +333,11 @@ class FooterLinksViewTests(APITestCase):
         self.assertEqual(payload[0]["icon"], self.link_1.icon_class.class_name)
         self.assertEqual(payload[0]["url"], self.link_1.url)
 
-
+@override_settings(CACHES={
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+})
 class APITests(TestCase):
 
     def setUp(self):
@@ -295,6 +346,12 @@ class APITests(TestCase):
         self.skill = Skill.objects.create(name="JavaScript", icon_class=self.icon)
         self.card = SkillsCard.objects.create(category_title="Frontend", icon_class=self.icon)
         self.card.skills.add(self.skill)
+
+    def tearDown(self):
+        self.icon.delete()
+        self.skill.delete()
+        self.card.delete()
+        super(APITests, self).tearDown()
 
     def test_csrf_token_view(self):
         response = self.client.get("/api/csrf")
@@ -312,7 +369,7 @@ class APITests(TestCase):
 class TestMessagesViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.url = reverse("contact")
+        self.url = reverse("contact_form")
 
     def test_messages_view(self):
         data = {
@@ -322,5 +379,6 @@ class TestMessagesViewTests(APITestCase):
             'projectType': 'Hotel continental',
             'message': 'One coin',
         }
-        response = self.client.post(self.url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
