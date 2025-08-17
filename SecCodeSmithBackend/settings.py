@@ -133,10 +133,11 @@ else:
     }
 
 
+REDIS_PASSWORD = f":{env('REDIS_PASSWORD')}@" if env('REDIS_PASSWORD') else ""
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://:Password@127.0.0.1:6379/1",
+        "LOCATION": f"redis://{REDIS_PASSWORD}{env('REDIS_HOST')}:{env('REDIS_PORT')}/1",
     }
 }
 

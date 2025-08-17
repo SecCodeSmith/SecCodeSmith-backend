@@ -1,47 +1,34 @@
 FROM alpine:3.22
 
 ENV PYTHONUNBUFFERED=1
-ENV DATABASE_TYPE="pgsql"
-ENV DATABASE_HOST="postgres:5432"
-ENV DATABASE_USER="postgres"
-ENV DATABASE_PASSWORD="postgres"
-ENV DATABASE_NAME="app"
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-ENV EMAIL_HOST=""
-ENV EMAIL_LOGIN=""
-ENV EMAIL_PASSWORD=""
-ENV EMAIL_SMTP_PORT=""
-ENV EMAIL=""
-
-ENV REDIS_HOST="redis"
-ENV REDIS_PORT="6379"
-ENV REDIS_PASSWORD="Password"
-ENV PAGE_CACHE_TIME=900
-
-ENV DJANGO_SUPERUSER_USERNAME="admin"
-ENV DJANGO_SUPERUSER_PASSWORD="admin"
-ENV DJANGO_SUPERUSER_EMAIL="admin@local"
-
-RUN apk add --update --no-cache python3 \
-    py3-pip build-base libffi-dev postgresql-dev \
-    bash \
+RUN apk add --update --no-cache --virtual .build-deps \
+        build-base \
+        libffi-dev \
+        postgresql-dev \
+    && apk add --update --no-cache \
+        python3 \
+        py3-pip \
+        bash \
+        postgresql-client \
+        tzdata \
     && ln -sf python3 /usr/bin/python
 
 RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:${PATH}"
 
 RUN mkdir /app
 WORKDIR /app
 
-
-
 COPY requirements.txt  .
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
-COPY ./* .
+
+COPY . .
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "your_project_name.wsgi:application", "--bind", "0.0.0.0:8000"]
