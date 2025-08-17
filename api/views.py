@@ -58,11 +58,11 @@ class AboutPage(APIView):
         """
 
         try:
-            lang = Lang.objects.get(iso_code=lang_arg)
-        except Lang.DoesNotExist:
-            lang = Lang.objects.first()
+            try:
+                lang = Lang.objects.get(iso_code=lang_arg)
+            except Lang.DoesNotExist:
+                lang = Lang.objects.first()
 
-        try:
             about = About.objects.get(lang=lang)
             professional_journey = (ProfessionalJourney.objects.filter(about=about)
                                     .order_by('-end_date', '-start_date')
@@ -153,11 +153,11 @@ class ContactPage(APIView):
     @method_decorator(cache_page(60))
     def get(self, request, lang_arg = None):
         try:
-            lang = Lang.objects.get(iso_code=lang_arg)
-        except Lang.DoesNotExist:
-            lang = Lang.objects.first()
+            try:
+                lang = Lang.objects.get(iso_code=lang_arg)
+            except Lang.DoesNotExist:
+                lang = Lang.objects.first()
 
-        try:
             contact = Contact.objects.get(language=lang)
             socials = SocialLinks.objects.filter(contact_pages=True).all()
             faq = FAQ.objects.filter(contact=contact).all()
