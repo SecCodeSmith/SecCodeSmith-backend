@@ -39,7 +39,7 @@ else:
 EOF
 
 echo "Collecting static files..."
-python manage.py collectstatic --noinput --clear
+python manage.py collectstatic --noinput
 
 echo "Starting server..."
 exec "$@"

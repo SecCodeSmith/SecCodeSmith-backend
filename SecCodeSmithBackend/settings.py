@@ -51,7 +51,7 @@ if env('EMAIL_HOST') is not None and env('EMAIL_HOST') != '':
 SECRET_KEY = 'django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
