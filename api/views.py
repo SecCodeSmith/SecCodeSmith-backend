@@ -1,5 +1,6 @@
 from sqlite3 import IntegrityError
 
+from django.core.mail import send_mail
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.http import JsonResponse
@@ -225,6 +226,50 @@ class ContactFormEndpoint(APIView):
                 message=message,
                 budget=budget,
             ).save()
+
+            contact = Contact.objects.first()
+            if contact:
+                admin_emails = []
+                if contact.email:
+                    admin_emails.append(contact.email)
+                if contact.business_email:
+                    admin_emails.append(contact.business_email)
+
+                if admin_emails:
+                    admin_subject = 'New message from your portfolio contact form'
+                    admin_message = f"""
+                    You have a new message from {name} ({email}).
+                    Subject: {subject}
+                    Project Type: {project_type}
+                    Budget: {budget}
+                    Message:
+                    {message}
+                    """
+                    send_mail(
+                        subject=admin_subject,
+                        message=admin_message,
+                        from_email=None,  # Use default from settings
+                        recipient_list=admin_emails,
+                        fail_silently=False,
+                    )
+
+            # Send confirmation email to the user
+            user_subject = 'Thank you for your message'
+            user_message = f"""
+            Hi {name},
+
+            Thank you for contacting me. I have received your message and will get back to you shortly.
+
+            Best regards,
+            SecCodeSmith
+            """
+            send_mail(
+                subject=user_subject,
+                message=user_message,
+                from_email=None, # Use default from settings
+                recipient_list=[email],
+                fail_silently=False,
+            )
 
             return JsonResponse({'message': 'Message created'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
