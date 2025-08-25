@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 env = environ.Env(
-    DEBUG=(bool, False),
+    DJANGO_DEBUG=(bool, False),
     DATABASE_TYPE=(str, 'pgsql'),
     DATABASE_USER=(str, 'postgres'),
     DATABASE_PASSWORD=(str, 'postgres'),
@@ -32,6 +32,7 @@ env = environ.Env(
     REDIS_DB=(int, 0),
     REDIS_PASSWORD=(str, ''),
     PAGE_CACHE_TIME=(int, 60),
+    DJANGO_ALLOWED_HOSTS=(list, []),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
@@ -48,12 +49,14 @@ if env('EMAIL_HOST') is not None and env('EMAIL_HOST') != '':
     EMAIL_SMTP_PORT = env('EMAIL_SMTP_PORT')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env('DJANGO_DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS')
+CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS')
+CORS_ALLOWED_ORIGINS = env.list('DJANGO_CORS_ALLOWED_ORIGINS')
 
 
 # Application definition
@@ -83,10 +86,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173",
 ]
 
 
