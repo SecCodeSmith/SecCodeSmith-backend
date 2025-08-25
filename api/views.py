@@ -59,32 +59,23 @@ class AboutPage(APIView):
         Returns an About section of the website in specified language.
         """
 
+        if lang_arg is None:
+            return JsonResponse({'error': 'Language not specified'}, status=status.HTTP_404_NOT_FOUND)
+
         try:
-            try:
-                lang = Lang.objects.get(iso_code=lang_arg)
-            except Lang.DoesNotExist:
-                try:
-                    lang = Lang.objects.first()
-                except Lang.DoesNotExist:
-                    return JsonResponse({'error': 'Database is empty'}
-                                        , status=status.HTTP_404_NOT_FOUND)
-            if lang is None:
-                return JsonResponse({'error': 'Language not found'}, status=status.HTTP_404_NOT_FOUND)
-
+            lang = Lang.objects.get(iso_code=lang_arg)
             about = About.objects.get(lang=lang)
-
-            if about is None:
-                return JsonResponse({'error': 'Language not found'}, status=status.HTTP_404_NOT_FOUND)
-
-            professional_journey = (ProfessionalJourney.objects.filter(about=about)
-                                    .order_by('-end_date', '-start_date')
-                                    .all())
-            technical_arsenal = TechnicalArsenal.objects.filter(about=about).all()
-            core_value = CoreValue.objects.filter(about=about).all()
-            testimonials = Testimonials.objects.filter(about=about).all()
+        except Lang.DoesNotExist:
+            return JsonResponse({'error': f'Language "{lang_arg}" not found'}, status=status.HTTP_404_NOT_FOUND)
         except About.DoesNotExist:
-            return JsonResponse({'error': 'About in lang {} not found'.format(lang.name or lang_arg)}
-                                , status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'error': f'About in lang {lang_arg} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        professional_journey = (ProfessionalJourney.objects.filter(about=about)
+                                .order_by('-end_date', '-start_date')
+                                .all())
+        technical_arsenal = TechnicalArsenal.objects.filter(about=about).all()
+        core_value = CoreValue.objects.filter(about=about).all()
+        testimonials = Testimonials.objects.filter(about=about).all()
 
         data = {
             'title': about.about_title,

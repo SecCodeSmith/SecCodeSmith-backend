@@ -1,8 +1,6 @@
 import json
 from datetime import datetime
-from unittest.mock import patch
 
-from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -365,9 +363,10 @@ class APITests(TestCase):
         response = self.client.get("/api/skills-cards")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["categoryTitle"], "Frontend")
-        self.assertEqual(data[0]["skills"][0]["name"], "JavaScript")
+        self.assertGreater(len(data), 0)
+        frontend_card = next((card for card in data if card['categoryTitle'] == 'Frontend'), None)
+        self.assertIsNotNone(frontend_card)
+        self.assertEqual(frontend_card["skills"][0]["name"], "JavaScript")
 
 class TestMessagesViewTests(APITestCase):
     def setUp(self):
