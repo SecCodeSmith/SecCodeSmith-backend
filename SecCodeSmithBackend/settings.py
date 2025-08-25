@@ -14,6 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
+    SECRET_KEY=(str, 'django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p'),
+    ALLOWED_HOSTS=(list, ['*']),
     DATABASE_TYPE=(str, 'pgsql'),
     DATABASE_USER=(str, 'postgres'),
     DATABASE_PASSWORD=(str, 'postgres'),
@@ -48,12 +50,12 @@ if env('EMAIL_HOST') is not None and env('EMAIL_HOST') != '':
     EMAIL_SMTP_PORT = env('EMAIL_SMTP_PORT')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 
 # Application definition
@@ -114,30 +116,32 @@ WSGI_APPLICATION = 'SecCodeSmithBackend.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-if env('DATABASE_TYPE') == 'pgsql':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env('DATABASE_NAME'),
-            'USER': env('DATABASE_USER'),
-            'PASSWORD': env('DATABASE_PASSWORD'),
-            'HOST': env('DATABASE_HOST'),
-            'PORT': env('DATABASE_PORT'),
-        }
-    }
-else:
+if 'test' in sys.argv or 'pytest' in sys.modules:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': ':memory:',
         }
     }
-
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
+else:
+    if env('DATABASE_TYPE') == 'pgsql':
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': env('DATABASE_NAME'),
+                'USER': env('DATABASE_USER'),
+                'PASSWORD': env('DATABASE_PASSWORD'),
+                'HOST': env('DATABASE_HOST'),
+                'PORT': env('DATABASE_PORT'),
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 
 REDIS_PASSWORD = f":{env('REDIS_PASSWORD')}@" if env('REDIS_PASSWORD') else ""
