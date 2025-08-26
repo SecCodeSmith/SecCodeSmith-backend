@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from unittest.mock import patch
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -23,8 +24,9 @@ from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
     }
 }
 )
-class SkillCardsViewTests(APITestCase):
+class SkillCardsViewTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = SkillCards.as_view()
         self.url = "/api/skills-cards"
