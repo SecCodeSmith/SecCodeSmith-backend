@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -9,7 +10,7 @@ from rest_framework import status
 
 from SecCodeSmithBackend.settings import DATABASES
 from api.models import *
-from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
+from api.views import AboutPage, SkillCards, SocialLinksFooter
 
 @override_settings(CACHES={
     'default': {
@@ -24,7 +25,6 @@ from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
 )
 class SkillCardsViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.factory = APIRequestFactory()
         self.view = SkillCards.as_view()
@@ -91,7 +91,6 @@ class SkillCardsViewTests(APITestCase):
 })
 class AboutPageViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
@@ -243,7 +242,6 @@ class AboutPageViewTests(APITestCase):
 })
 class AboutPage404ViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
@@ -297,7 +295,6 @@ class AboutPage404ViewTests(APITestCase):
 })
 class FooterLinksViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.factory = APIRequestFactory()
         self.view = SocialLinksFooter.as_view()
@@ -349,7 +346,6 @@ class FooterLinksViewTests(APITestCase):
 class APITests(APITestCase):
 
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.client = APIClient()
         self.icon = IconsClass.objects.create(class_name="fas fa-tools")

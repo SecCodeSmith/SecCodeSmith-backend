@@ -123,25 +123,24 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
             'NAME': ':memory:',
         }
     }
+elif env('DATABASE_TYPE') == 'pgsql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DATABASE_NAME'),
+            'USER': env('DATABASE_USER'),
+            'PASSWORD': env('DATABASE_PASSWORD'),
+            'HOST': env('DATABASE_HOST'),
+            'PORT': env('DATABASE_PORT'),
+        }
+    }
 else:
-    if env('DATABASE_TYPE') == 'pgsql':
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': env('DATABASE_NAME'),
-                'USER': env('DATABASE_USER'),
-                'PASSWORD': env('DATABASE_PASSWORD'),
-                'HOST': env('DATABASE_HOST'),
-                'PORT': env('DATABASE_PORT'),
-            }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+    }
 
 
 REDIS_PASSWORD = f":{env('REDIS_PASSWORD')}@" if env('REDIS_PASSWORD') else ""
