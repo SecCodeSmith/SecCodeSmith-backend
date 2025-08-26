@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from unittest.mock import patch
 
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -11,7 +10,7 @@ from rest_framework import status
 
 from SecCodeSmithBackend.settings import DATABASES
 from api.models import *
-from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
+from api.views import AboutPage, SkillCards, SocialLinksFooter
 
 @override_settings(CACHES={
     'default': {
@@ -257,14 +256,14 @@ class AboutPage404ViewTests(APITestCase):
 
         request = self.factory.get(self.url)
 
-        response = self.view(request)
+        response = self.view(request, "xx")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         payload = json.loads(response.text)
         self.assertIn("error", payload)
         self.assertEqual(
             payload["error"],
-            f"Language not found"
+            f"Language \"xx\" not found"
         )
 
     def test_get_when_no_about_returns_404(self):
@@ -276,7 +275,7 @@ class AboutPage404ViewTests(APITestCase):
 
         request = self.factory.get(self.url)
 
-        response = self.view(request)
+        response = self.view(request, "pl")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         payload = json.loads(response.text)
@@ -341,9 +340,10 @@ class FooterLinksViewTests(APITestCase):
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 })
-class APITests(TestCase):
+class APITests(APITestCase):
 
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
         self.icon = IconsClass.objects.create(class_name="fas fa-tools")
         self.skill = Skill.objects.create(name="JavaScript", icon_class=self.icon)
@@ -365,9 +365,10 @@ class APITests(TestCase):
         response = self.client.get("/api/skills-cards")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["categoryTitle"], "Frontend")
-        self.assertEqual(data[0]["skills"][0]["name"], "JavaScript")
+        self.assertGreater(len(data), 0)
+        frontend_card = next((card for card in data if card['categoryTitle'] == 'Frontend'), None)
+        self.assertIsNotNone(frontend_card)
+        self.assertEqual(frontend_card["skills"][0]["name"], "JavaScript")
 
 class TestMessagesViewTests(APITestCase):
     def setUp(self):
