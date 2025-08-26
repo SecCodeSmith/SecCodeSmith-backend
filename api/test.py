@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from unittest.mock import patch
 
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -282,7 +283,7 @@ class AboutPage404ViewTests(APITestCase):
         self.assertIn("error", payload)
         self.assertEqual(
             payload["error"],
-            f"About in lang polish not found"
+            f"About in lang pl not found"
         )
 
 
