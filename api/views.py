@@ -59,8 +59,13 @@ class AboutPage(APIView):
         Returns an About section of the website in specified language.
         """
 
-        if lang_arg is None:
-            return JsonResponse({'error': 'Language not specified'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            if lang_arg is None:
+                lang_arg = Lang.objects.first().iso_code
+                if lang_arg is None:
+                    return JsonResponse({'error': 'Language not specified'}, status=status.HTTP_404_NOT_FOUND)
+        except Lang.DoesNotExist:
+            return JsonResponse({'error': 'Language not found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             lang = Lang.objects.get(iso_code=lang_arg)
