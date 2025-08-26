@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -9,7 +10,7 @@ from rest_framework import status
 
 from SecCodeSmithBackend.settings import DATABASES
 from api.models import *
-from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
+from api.views import AboutPage, SkillCards, SocialLinksFooter
 
 @override_settings(CACHES={
     'default': {
@@ -90,6 +91,8 @@ class SkillCardsViewTests(TestCase):
 })
 class AboutPageViewTests(APITestCase):
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
         self.url = "/api/about"
@@ -240,6 +243,8 @@ class AboutPageViewTests(APITestCase):
 })
 class AboutPage404ViewTests(APITestCase):
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
         self.url = "/api/about"
@@ -255,14 +260,14 @@ class AboutPage404ViewTests(APITestCase):
 
         request = self.factory.get(self.url)
 
-        response = self.view(request)
+        response = self.view(request, "xx")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         payload = json.loads(response.text)
         self.assertIn("error", payload)
         self.assertEqual(
             payload["error"],
-            f"Language not found"
+            f"Language \"xx\" not found"
         )
 
     def test_get_when_no_about_returns_404(self):
@@ -274,14 +279,14 @@ class AboutPage404ViewTests(APITestCase):
 
         request = self.factory.get(self.url)
 
-        response = self.view(request)
+        response = self.view(request, "pl")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         payload = json.loads(response.text)
         self.assertIn("error", payload)
         self.assertEqual(
             payload["error"],
-            f"About in lang polish not found"
+            f"About in lang pl not found"
         )
 
 
@@ -292,6 +297,8 @@ class AboutPage404ViewTests(APITestCase):
 })
 class FooterLinksViewTests(APITestCase):
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = SocialLinksFooter.as_view()
         self.url = '/api/footer-links/'
@@ -339,9 +346,11 @@ class FooterLinksViewTests(APITestCase):
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 })
-class APITests(TestCase):
+class APITests(APITestCase):
 
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
         self.client = APIClient()
         self.icon = IconsClass.objects.create(class_name="fas fa-tools")
         self.skill = Skill.objects.create(name="JavaScript", icon_class=self.icon)
