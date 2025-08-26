@@ -61,7 +61,7 @@ class AboutPage(APIView):
 
         try:
             if lang_arg is None:
-                lang_arg = Lang.objects.first().iso_code
+                lang_arg = Lang.objects.first().name
                 if lang_arg is None:
                     return JsonResponse({'error': 'Language not specified'}, status=status.HTTP_404_NOT_FOUND)
         except Lang.DoesNotExist:
