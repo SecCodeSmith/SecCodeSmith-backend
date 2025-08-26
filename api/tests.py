@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
+from unittest.mock import patch
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -22,8 +24,9 @@ from api.views import CSRFTokenView, AboutPage, SkillCards, SocialLinksFooter
     }
 }
 )
-class SkillCardsViewTests(APITestCase):
+class SkillCardsViewTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = SkillCards.as_view()
         self.url = "/api/skills-cards"
@@ -382,3 +385,41 @@ class TestMessagesViewTests(APITestCase):
 
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @patch('api.views.send_mail')
+    def test_messages_view_sends_email(self, mock_send_mail):
+        lang = Lang.objects.create(name="English", iso_code="en")
+        Contact.objects.create(
+            email="admin@example.com",
+            business_email="business@example.com",
+            language=lang
+        )
+
+        data = {
+            'name': 'Jon Wick',
+            'email': 'jon@example.pl',
+            'subject': 'Hello World!',
+            'projectType': 'Hotel continental',
+            'message': 'One coin',
+        }
+
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(mock_send_mail.called)
+        self.assertEqual(mock_send_mail.call_count, 2)
+
+        # Check admin email
+        admin_call_args = mock_send_mail.call_args_list[0][1]
+        self.assertEqual(admin_call_args['subject'], 'New message from your portfolio contact form')
+        self.assertIn(data['name'], admin_call_args['message'])
+        self.assertIn(data['email'], admin_call_args['message'])
+        self.assertEqual(admin_call_args['from_email'], None)
+        self.assertEqual(admin_call_args['recipient_list'], ['admin@example.com', 'business@example.com'])
+
+        # Check user confirmation email
+        user_call_args = mock_send_mail.call_args_list[1][1]
+        self.assertEqual(user_call_args['subject'], 'Thank you for your message')
+        self.assertIn(data['name'], user_call_args['message'])
+        self.assertEqual(user_call_args['from_email'], None)
+        self.assertEqual(user_call_args['recipient_list'], [data['email']])
