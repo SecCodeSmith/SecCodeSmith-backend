@@ -91,8 +91,6 @@ class SkillCardsViewTests(TestCase):
 })
 class AboutPageViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
-        cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
         self.url = "/api/about"
@@ -243,8 +241,6 @@ class AboutPageViewTests(APITestCase):
 })
 class AboutPage404ViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
-        cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
         self.url = "/api/about"
@@ -286,7 +282,7 @@ class AboutPage404ViewTests(APITestCase):
         self.assertIn("error", payload)
         self.assertEqual(
             payload["error"],
-            f"About in lang pl not found"
+            f"About in lang polish not found"
         )
 
 
@@ -297,8 +293,6 @@ class AboutPage404ViewTests(APITestCase):
 })
 class FooterLinksViewTests(APITestCase):
     def setUp(self):
-        from django.core.cache import cache
-        cache.clear()
         self.factory = APIRequestFactory()
         self.view = SocialLinksFooter.as_view()
         self.url = '/api/footer-links/'
@@ -349,7 +343,6 @@ class FooterLinksViewTests(APITestCase):
 class APITests(APITestCase):
 
     def setUp(self):
-        from django.core.cache import cache
         cache.clear()
         self.client = APIClient()
         self.icon = IconsClass.objects.create(class_name="fas fa-tools")
