@@ -1,4 +1,40 @@
 services:
+  backend:
+    build: .
+    # For production, use the published image:
+    # image: ghcr.io/seccodesmith/seccodesmith-backend:latest
+    container_name: seccodesmith-backend
+    hostname: backend
+    networks:
+      - redis-net
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me-in-production}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - DATABASE_TYPE=pgsql
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "manage.py", "check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
   redis:
     image: redis:8.0.2-alpine
     container_name: redis-Backend
