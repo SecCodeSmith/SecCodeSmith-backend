@@ -6,23 +6,26 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from rest_framework import status
+from rest_framework.test import APIClient, APIRequestFactory, APITestCase
 
-from SecCodeSmithBackend.settings import DATABASES
 from api.models import *
 from api.views import AboutPage, SkillCards, SocialLinksFooter
+from SecCodeSmithBackend.settings import DATABASES
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}, DATABASES={
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
-}
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
 )
 class SkillCardsViewTests(TestCase):
     def setUp(self):
@@ -31,23 +34,18 @@ class SkillCardsViewTests(TestCase):
         self.view = SkillCards.as_view()
         self.url = "/api/skills-cards"
 
-        self.icon1 = IconsClass.objects.create(
-            name="GitHub", class_name="fas fa-github", description="GitHub icon"
-        )
-        self.icon2 = IconsClass.objects.create(
-            name="LinkedIn", class_name="fas fa-linkedin", description="LinkedIn icon"
-        )
+        self.icon1 = IconsClass.objects.create(name="GitHub", class_name="fas fa-github", description="GitHub icon")
+        self.icon2 = IconsClass.objects.create(name="LinkedIn", class_name="fas fa-linkedin", description="LinkedIn icon")
 
         self.skill_a = Skill.objects.create(name="Python", icon_class=self.icon1)
         self.skill_b = Skill.objects.create(name="Django", icon_class=self.icon2)
 
         self.skills_card = SkillsCard.objects.create(
             icon_class=self.icon1,  # Use the GitHub icon
-            category_title="Backend Development"
+            category_title="Backend Development",
         )
 
         self.skills_card.skills.add(self.skill_a, self.skill_b)
-
 
     def test_get_returns_all_cards_structure(self):
         """
@@ -85,11 +83,14 @@ class SkillCardsViewTests(TestCase):
         }
         self.assertEqual(returned_pairs, expected_pairs)
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-})
+)
 class AboutPageViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -105,15 +106,9 @@ class AboutPageViewTests(APITestCase):
             language=self.lang_en,
         )
 
-        self.sample_file = SimpleUploadedFile(
-            name='test.jpg',
-            content=b'file_content',
-            content_type='image/jpeg'
-        )
+        self.sample_file = SimpleUploadedFile(name="test.jpg", content=b"file_content", content_type="image/jpeg")
 
-        self.icon = IconsClass.objects.create(
-            name="SampleIcon", class_name="fas fa-sample", description="Sample icon"
-        )
+        self.icon = IconsClass.objects.create(name="SampleIcon", class_name="fas fa-sample", description="Sample icon")
 
         self.about = About.objects.create(
             about_title="About Me Section",
@@ -123,12 +118,14 @@ class AboutPageViewTests(APITestCase):
         )
 
         self.testimonial = Testimonials.objects.create(
-            author="Jane Smith", email="jane@example.com", position="CTO", text="Excellent!", about=self.about
+            author="Jane Smith",
+            email="jane@example.com",
+            position="CTO",
+            text="Excellent!",
+            about=self.about,
         )
 
-        self.tech_arsenal = TechnicalArsenal.objects.create(
-            icon=self.icon, title="Python Stack", about=self.about
-        )
+        self.tech_arsenal = TechnicalArsenal.objects.create(icon=self.icon, title="Python Stack", about=self.about)
 
         self.prof_journey = ProfessionalJourney.objects.create(
             title="Backend Developer",
@@ -139,15 +136,12 @@ class AboutPageViewTests(APITestCase):
             about=self.about,
         )
 
-        self.tech_skill = TechnicalArsenalSkill.objects.create(
-            text="Django",
-            technical_arsenal=self.tech_arsenal
-        )
+        self.tech_skill = TechnicalArsenalSkill.objects.create(text="Django", technical_arsenal=self.tech_arsenal)
         self.core_value = CoreValue.objects.create(
             about=self.about,
             title="Integrity",
             icon=self.icon,
-            description="Always do right"
+            description="Always do right",
         )
         try:
             self.about.testimonials.add(self.testimonial)
@@ -235,18 +229,29 @@ class AboutPageViewTests(APITestCase):
             self.assertEqual(tst_item["position"], self.testimonial.position)
             self.assertEqual(tst_item["text"], self.testimonial.text)
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-})
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
 class AboutPage404ViewTests(APITestCase):
     def setUp(self):
+        cache.clear()
         self.factory = APIRequestFactory()
         self.view = AboutPage.as_view()
         self.url = "/api/about"
 
     def tearDown(self):
+        cache.clear()
         super(APITestCase, self).tearDown()
 
     def test_get_when_no_lang_returns_404(self):
@@ -262,10 +267,7 @@ class AboutPage404ViewTests(APITestCase):
 
         payload = json.loads(response.text)
         self.assertIn("error", payload)
-        self.assertEqual(
-            payload["error"],
-            f"Language \"xx\" not found"
-        )
+        self.assertEqual(payload["error"], f'Language "xx" not found')
 
     def test_get_when_no_about_returns_404(self):
         """
@@ -281,22 +283,21 @@ class AboutPage404ViewTests(APITestCase):
 
         payload = json.loads(response.text)
         self.assertIn("error", payload)
-        self.assertEqual(
-            payload["error"],
-            f"About in lang pl not found"
-        )
+        self.assertEqual(payload["error"], f"About in lang pl not found")
 
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-})
+)
 class FooterLinksViewTests(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.view = SocialLinksFooter.as_view()
-        self.url = '/api/footer-links/'
+        self.url = "/api/footer-links/"
         self.icon_LinkedIn = IconsClass.objects.create(
             class_name="LinkedIn",
             name="LinkedIn",
@@ -336,11 +337,14 @@ class FooterLinksViewTests(APITestCase):
         self.assertEqual(payload[0]["icon"], self.link_1.icon_class.class_name)
         self.assertEqual(payload[0]["url"], self.link_1.url)
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-})
+)
 class APITests(APITestCase):
 
     def setUp(self):
@@ -367,9 +371,10 @@ class APITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertGreater(len(data), 0)
-        frontend_card = next((card for card in data if card['categoryTitle'] == 'Frontend'), None)
+        frontend_card = next((card for card in data if card["categoryTitle"] == "Frontend"), None)
         self.assertIsNotNone(frontend_card)
         self.assertEqual(frontend_card["skills"][0]["name"], "JavaScript")
+
 
 class TestMessagesViewTests(APITestCase):
     def setUp(self):
@@ -378,34 +383,34 @@ class TestMessagesViewTests(APITestCase):
 
     def test_messages_view(self):
         data = {
-            'name': 'Jon Wick',
-            'email': 'jon@example.pl',
-            'subject': 'Hello World!',
-            'projectType': 'Hotel continental',
-            'message': 'One coin',
+            "name": "Jon Wick",
+            "email": "jon@example.pl",
+            "subject": "Hello World!",
+            "projectType": "Hotel continental",
+            "message": "One coin",
         }
 
-        response = self.client.post(self.url, data, format='json')
+        response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @patch('api.views.send_mail')
+    @patch("api.views.send_mail")
     def test_messages_view_sends_email(self, mock_send_mail):
         lang = Lang.objects.create(name="English", iso_code="en")
         Contact.objects.create(
             email="admin@example.com",
             business_email="business@example.com",
-            language=lang
+            language=lang,
         )
 
         data = {
-            'name': 'Jon Wick',
-            'email': 'jon@example.pl',
-            'subject': 'Hello World!',
-            'projectType': 'Hotel continental',
-            'message': 'One coin',
+            "name": "Jon Wick",
+            "email": "jon@example.pl",
+            "subject": "Hello World!",
+            "projectType": "Hotel continental",
+            "message": "One coin",
         }
 
-        response = self.client.post(self.url, data, format='json')
+        response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertTrue(mock_send_mail.called)
@@ -413,15 +418,18 @@ class TestMessagesViewTests(APITestCase):
 
         # Check admin email
         admin_call_args = mock_send_mail.call_args_list[0][1]
-        self.assertEqual(admin_call_args['subject'], 'New message from your portfolio contact form')
-        self.assertIn(data['name'], admin_call_args['message'])
-        self.assertIn(data['email'], admin_call_args['message'])
-        self.assertEqual(admin_call_args['from_email'], None)
-        self.assertEqual(admin_call_args['recipient_list'], ['admin@example.com', 'business@example.com'])
+        self.assertEqual(admin_call_args["subject"], "New message from your portfolio contact form")
+        self.assertIn(data["name"], admin_call_args["message"])
+        self.assertIn(data["email"], admin_call_args["message"])
+        self.assertEqual(admin_call_args["from_email"], None)
+        self.assertEqual(
+            admin_call_args["recipient_list"],
+            ["admin@example.com", "business@example.com"],
+        )
 
         # Check user confirmation email
         user_call_args = mock_send_mail.call_args_list[1][1]
-        self.assertEqual(user_call_args['subject'], 'Thank you for your message')
-        self.assertIn(data['name'], user_call_args['message'])
-        self.assertEqual(user_call_args['from_email'], None)
-        self.assertEqual(user_call_args['recipient_list'], [data['email']])
+        self.assertEqual(user_call_args["subject"], "Thank you for your message")
+        self.assertIn(data["name"], user_call_args["message"])
+        self.assertEqual(user_call_args["from_email"], None)
+        self.assertEqual(user_call_args["recipient_list"], [data["email"]])

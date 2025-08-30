@@ -1,38 +1,30 @@
 # tests/test_models.py
 import json
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import fakeredis
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase, APIRequestFactory
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from datetime import timedelta, datetime
+from rest_framework import status
+from rest_framework.test import APIClient, APIRequestFactory, APITestCase
 
-from BlogApi.models import Author, Category, Tag, Post, Comment
+from BlogApi.models import Author, Category, Comment, Post, Tag
 from Images.models import Image
 
 
 class AuthorModelTests(TestCase):
     def test_author_str(self):
-        author = Author.objects.create(
-            name="Jane Doe",
-            email="jane@example.com",
-            bio="Just a test author."
-        )
+        author = Author.objects.create(name="Jane Doe", email="jane@example.com", bio="Just a test author.")
         self.assertEqual(str(author), "Jane Doe")
 
         author.avatar.delete(save=False)
 
     def test_author_fields(self):
-        author = Author.objects.create(
-            name="John Smith",
-            email="john@example.com",
-            bio=""
-        )
+        author = Author.objects.create(name="John Smith", email="john@example.com", bio="")
         self.assertEqual(author.name, "John Smith", msg="Author name should be correct")
         self.assertEqual(author.email, "john@example.com", msg="Author email should be correct")
         self.assertEqual(author.bio, "", msg="Author bio should be correct")
@@ -80,10 +72,7 @@ class TagModelTests(TestCase):
 class PostModelTests(TestCase):
     def setUp(self):
         # Create a single author and category to reuse
-        self.author = Author.objects.create(
-            name="Alice",
-            email="alice@example.com"
-        )
+        self.author = Author.objects.create(name="Alice", email="alice@example.com")
         self.category = Category.objects.create(title="Tech News")
 
     def tearDown(self):
@@ -99,7 +88,7 @@ class PostModelTests(TestCase):
             published_at=timezone.now(),
             author=self.author,
             read_time="3 min read",
-            content="This is the full content of the post."
+            content="This is the full content of the post.",
         )
         # __str__ should return the title
         self.assertEqual(str(post), title)
@@ -117,7 +106,7 @@ class PostModelTests(TestCase):
             published_at=timezone.now(),
             author=self.author,
             read_time="",
-            content="Content here."
+            content="Content here.",
         )
         # featured defaults to False
         self.assertFalse(post.featured)
@@ -134,7 +123,7 @@ class PostModelTests(TestCase):
             published_at=timezone.now(),
             author=self.author,
             read_time="2 min read",
-            content="Some content."
+            content="Some content.",
         )
         # Create two tags
         tag1 = Tag.objects.create(name="django")
@@ -154,24 +143,14 @@ class PostModelTests(TestCase):
             published_at=timezone.now(),
             author=self.author,
             read_time="1 min read",
-            content="Content."
+            content="Content.",
         )
         # Initially no comments
         self.assertEqual(post.comment_count, 0)
 
         # Add comments
-        Comment.objects.create(
-            post=post,
-            name="Anna",
-            email="anna@example.com",
-            content="First comment."
-        )
-        Comment.objects.create(
-            post=post,
-            name="Bob",
-            email="bob@example.com",
-            content="Second comment."
-        )
+        Comment.objects.create(post=post, name="Anna", email="anna@example.com", content="First comment.")
+        Comment.objects.create(post=post, name="Bob", email="bob@example.com", content="Second comment.")
         self.assertEqual(post.comment_count, 2)
 
     def test_post_ordering_by_published_at(self):
@@ -187,7 +166,7 @@ class PostModelTests(TestCase):
             published_at=earlier,
             author=self.author,
             read_time="1 min read",
-            content="Old content."
+            content="Old content.",
         )
         post_now = Post.objects.create(
             title="Now Post",
@@ -197,7 +176,7 @@ class PostModelTests(TestCase):
             published_at=now,
             author=self.author,
             read_time="1 min read",
-            content="Now content."
+            content="Now content.",
         )
         post_future = Post.objects.create(
             title="Future Post",
@@ -207,7 +186,7 @@ class PostModelTests(TestCase):
             published_at=later,
             author=self.author,
             read_time="1 min read",
-            content="Future content."
+            content="Future content.",
         )
 
         qs = Post.objects.all()
@@ -217,10 +196,7 @@ class PostModelTests(TestCase):
 
 class CommentModelTests(TestCase):
     def setUp(self):
-        self.author = Author.objects.create(
-            name="Commenter Author",
-            email="commenter@example.com"
-        )
+        self.author = Author.objects.create(name="Commenter Author", email="commenter@example.com")
         self.category = Category.objects.create(title="Comments Category")
         self.post = Post.objects.create(
             title="Post for Comments",
@@ -230,7 +206,7 @@ class CommentModelTests(TestCase):
             published_at=timezone.now(),
             author=self.author,
             read_time="1 min read",
-            content="Content."
+            content="Content.",
         )
 
     def tearDown(self):
@@ -241,7 +217,7 @@ class CommentModelTests(TestCase):
             post=self.post,
             name="Tester",
             email="tester@example.com",
-            content="This is a test comment."
+            content="This is a test comment.",
         )
         expected = f"Comment by Tester on {self.post.title}"
         self.assertEqual(str(comment), expected)
@@ -251,7 +227,7 @@ class CommentModelTests(TestCase):
             post=self.post,
             name="Emily",
             email="emily@example.com",
-            content="Hello world!"
+            content="Hello world!",
         )
         # created_at should be auto-populated; just check it's close to now
         now = timezone.now()
@@ -266,42 +242,37 @@ class CommentModelTests(TestCase):
         self.assertEqual(comment.content, "Hello world!")
         self.assertEqual(comment.post, self.post)
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-})
+)
 class BlogApiPageTests(APITestCase):
     def setUp(self):
-        self.sample_file = SimpleUploadedFile(
-            name='test.jpg',
-            content=b'file_content',
-            content_type='image/jpeg'
-        )
+        self.sample_file = SimpleUploadedFile(name="test.jpg", content=b"file_content", content_type="image/jpeg")
 
-        self.image = Image.objects.create(
-            name='existing',
-            alt='An existing image',
-            image=self.sample_file
-        )
+        self.image = Image.objects.create(name="existing", alt="An existing image", image=self.sample_file)
         self.author = Author.objects.create(
             name="Commenter Author",
             email="commenter@example.com",
             bio="This is a test comment.",
-            avatar=self.sample_file
+            avatar=self.sample_file,
         )
         self.second_author = Author.objects.create(
             name="Second Author",
             email="second@example.com",
             bio="This is a second test comment.",
-            avatar=self.sample_file
+            avatar=self.sample_file,
         )
         # Dates for posts
-        self.sample_date = datetime.strptime("01-01-2000", "%d-%m-%Y")
-        self.future_date = datetime.now() + timedelta(days=1)
+        self.sample_date = timezone.make_aware(datetime.strptime("01-01-2000", "%d-%m-%Y"))
+        self.future_date = timezone.now() + timedelta(days=1)
         # Category
         self.category = Category.objects.create(title="Comments Category")
-        self.tag = Tag.objects.create(slug='test', name='testr')
+        self.tag = Tag.objects.create(slug="test", name="testr")
         # Generate 12 Posts
         self.posts = []
         for i in range(12):
@@ -321,19 +292,16 @@ class BlogApiPageTests(APITestCase):
             if i % 2 == 0:
                 post.tags.add(self.tag)
 
+        self.posts_count = lambda count_post_on_page: reverse(
+            "BlogApi:post_page_count", kwargs={"post_per_page": count_post_on_page}
+        )
 
-        self.posts_count = lambda count_post_on_page: \
-            reverse('BlogApi:post_page_count',
-                    kwargs={'post_per_page': count_post_on_page})
+        self.post_page = lambda page: reverse("BlogApi:post-page", kwargs={"page_number": page})
 
-        self.post_page = lambda page: reverse('BlogApi:post-page',
-                                              kwargs={'page_number': page})
+        self.post_view_page = lambda slug: reverse("BlogApi:post", kwargs={"slug": slug})
 
-        self.post_view_page = lambda slug: reverse('BlogApi:post',
-                                                   kwargs={'slug': slug})
-
-        self.tags = reverse('BlogApi:blog-tags')
-        self.categoryEndpoint = reverse('BlogApi:blog-categories')
+        self.tags = reverse("BlogApi:blog-tags")
+        self.categoryEndpoint = reverse("BlogApi:blog-categories")
 
     def tearDown(self):
         self.image.image.delete(save=False)
@@ -343,7 +311,7 @@ class BlogApiPageTests(APITestCase):
         self.second_author.avatar.delete(save=False)
         for post in self.posts:
             post.image.delete(save=False)
-            
+
         super().tearDown()
 
     def test_posts_count(self):
@@ -351,26 +319,26 @@ class BlogApiPageTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.text)
-        self.assertIn('count', payload)
-        self.assertEqual(payload['count'], 3)
+        self.assertIn("count", payload)
+        self.assertEqual(payload["count"], 3)
 
     def test_posts_page(self):
         url = self.post_page(1)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.text)
-        self.assertIn('page', payload)
-        self.assertIn('posts', payload)
-        self.assertEqual(payload['page'], 1)
-        self.assertEqual(len(payload['posts']), 6)
+        self.assertIn("page", payload)
+        self.assertIn("posts", payload)
+        self.assertEqual(payload["page"], 1)
+        self.assertEqual(len(payload["posts"]), 6)
         url = self.post_page(2)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.text)
-        self.assertIn('page', payload)
-        self.assertIn('posts', payload)
-        self.assertEqual(payload['page'], 2)
-        self.assertEqual(len(payload['posts']), 0)
+        self.assertIn("page", payload)
+        self.assertIn("posts", payload)
+        self.assertEqual(payload["page"], 2)
+        self.assertEqual(len(payload["posts"]), 0)
 
     def test_posts_pages(self):
         for page in self.posts:
@@ -378,10 +346,10 @@ class BlogApiPageTests(APITestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             payload = json.loads(response.content)
-            self.assertIn('id', payload)
-            self.assertEqual(payload['id'], page.id)
-            self.assertIn('slug', payload)
-            self.assertEqual(payload['slug'], page.slug)
+            self.assertIn("id", payload)
+            self.assertEqual(payload["id"], page.id)
+            self.assertIn("slug", payload)
+            self.assertEqual(payload["slug"], page.slug)
             self.assertEqual(len(payload), 12)
 
     def test_tags(self):
@@ -395,50 +363,51 @@ class BlogApiPageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.content)
         self.assertEqual(len(payload), 1)
-        self.assertIn('slug', payload[0])
-        self.assertEqual(payload[0]['slug'], self.category.slug)
-        self.assertIn('title', payload[0])
-        self.assertEqual(payload[0]['title'], self.category.title)
-        self.assertIn('BlogCount', payload[0])
-        self.assertEqual(payload[0]['BlogCount'], 6)
+        self.assertIn("slug", payload[0])
+        self.assertEqual(payload[0]["slug"], self.category.slug)
+        self.assertIn("title", payload[0])
+        self.assertEqual(payload[0]["title"], self.category.title)
+        self.assertIn("BlogCount", payload[0])
+        self.assertEqual(payload[0]["BlogCount"], 6)
 
-@override_settings(CACHES={
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-})
+)
 class BlogApiPageEmptyDatabaseTests(APITestCase):
     def setUp(self):
-        self.posts_count = lambda count_post_on_page: \
-            reverse('BlogApi:post_page_count',
-                    kwargs={'post_per_page': count_post_on_page})
+        self.posts_count = lambda count_post_on_page: reverse(
+            "BlogApi:post_page_count", kwargs={"post_per_page": count_post_on_page}
+        )
 
-        self.post_page = lambda page: reverse('BlogApi:post-page',
-                                              kwargs={'page_number': page})
+        self.post_page = lambda page: reverse("BlogApi:post-page", kwargs={"page_number": page})
 
-        self.post_view_page = lambda slug: reverse('BlogApi:post',
-                                                   kwargs={'slug': slug})
+        self.post_view_page = lambda slug: reverse("BlogApi:post", kwargs={"slug": slug})
 
-        self.tags = reverse('BlogApi:blog-tags')
-        self.categoryEndpoint = reverse('BlogApi:blog-categories')
+        self.tags = reverse("BlogApi:blog-tags")
+        self.categoryEndpoint = reverse("BlogApi:blog-categories")
 
     def test_no_posts_count(self):
         url = self.posts_count(2)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.text)
-        self.assertIn('count', payload)
-        self.assertEqual(payload['count'], 0)
+        self.assertIn("count", payload)
+        self.assertEqual(payload["count"], 0)
 
     def test_no_posts_page(self):
         url = self.post_page(1)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = json.loads(response.content)
-        self.assertIn('page', payload)
-        self.assertIn('posts', payload)
-        self.assertEqual(payload['page'], 1)
-        self.assertEqual(len(payload['posts']), 0)
+        self.assertIn("page", payload)
+        self.assertIn("posts", payload)
+        self.assertEqual(payload["page"], 1)
+        self.assertEqual(len(payload["posts"]), 0)
 
     def test_no_posts_pages(self):
         url = self.post_view_page("test")
