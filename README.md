@@ -440,7 +440,7 @@ Base path: `/blog-api/`
 
 ### Project API
 
-Base path: `/project-api/` 
+Base path: `/project-api/`
 
 | Endpoint                      | Method | Description                            |
 | ----------------------------- | ------ | -------------------------------------- |
@@ -452,7 +452,7 @@ Base path: `/project-api/`
 
 ### Images API
 
-Base path: `/img/` 
+Base path: `/img/`
 
 | Endpoint           | Method | Description                                     |
 | ------------------ | ------ | ----------------------------------------------- |

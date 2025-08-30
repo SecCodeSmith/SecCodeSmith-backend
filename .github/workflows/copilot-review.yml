@@ -14,7 +14,7 @@ jobs:
   copilot-review:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -66,35 +66,35 @@ jobs:
       run: |
         echo "## 🐍 Django Code Analysis" >> analysis.md
         echo "" >> analysis.md
-        
+
         # Check for Django best practices
         echo "### Django Best Practices Check" >> analysis.md
-        
+
         # Check for security issues
         if grep -r "DEBUG = True" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__"; then
           echo "⚠️ **Warning**: Found DEBUG=True in code. Ensure this is not in production settings." >> analysis.md
         fi
-        
+
         # Check for hardcoded secrets
         if grep -r "SECRET_KEY.*=" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | grep -v "env("; then
           echo "⚠️ **Warning**: Potential hardcoded SECRET_KEY found. Use environment variables." >> analysis.md
         fi
-        
+
         # Check for missing migrations
         if python manage.py makemigrations --dry-run --check; then
           echo "✅ **Good**: No missing migrations detected." >> analysis.md
         else
           echo "⚠️ **Warning**: Missing migrations detected. Run 'python manage.py makemigrations'." >> analysis.md
         fi
-        
+
         # Check for proper error handling
         echo "" >> analysis.md
         echo "### Code Quality Observations" >> analysis.md
-        
+
         # Count TODO comments
         TODO_COUNT=$(grep -r "TODO\|FIXME\|XXX" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | wc -l || echo "0")
         echo "📝 **TODO/FIXME Comments**: $TODO_COUNT found" >> analysis.md
-        
+
         # Check for print statements (should use logging)
         PRINT_COUNT=$(grep -r "print(" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | grep -v "test" | wc -l || echo "0")
         if [ "$PRINT_COUNT" -gt 0 ]; then
@@ -107,21 +107,21 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          
+
           let analysisContent = '';
           if (fs.existsSync('analysis.md')) {
             analysisContent = fs.readFileSync('analysis.md', 'utf8');
           }
-          
+
           const comment = `
           ## 🤖 Automated Code Review
-          
+
           Thanks for your contribution! Here's an automated analysis of your changes:
-          
+
           ${analysisContent}
-          
+
           ### 📋 Checklist for Reviewers
-          
+
           - [ ] Code follows Django best practices
           - [ ] Tests are included for new functionality
           - [ ] Documentation is updated if needed
@@ -129,18 +129,18 @@ jobs:
           - [ ] Migrations are included if models changed
           - [ ] Error handling is appropriate
           - [ ] Security considerations are addressed
-          
+
           ### 🧪 Testing
-          
+
           Please ensure:
           - [ ] All existing tests pass
           - [ ] New tests cover the changes
           - [ ] Manual testing has been performed
-          
+
           ---
           *This review was generated automatically. Human review is still required.*
           `;
-          
+
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
@@ -151,7 +151,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -185,9 +185,9 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          
+
           let securityIssues = [];
-          
+
           // Parse Bandit results
           try {
             if (fs.existsSync('bandit-results.txt')) {
@@ -199,7 +199,7 @@ jobs:
           } catch (e) {
             console.log('Could not parse Bandit results');
           }
-          
+
           // Parse Safety results
           try {
             if (fs.existsSync('safety-results.txt')) {
@@ -211,28 +211,28 @@ jobs:
           } catch (e) {
             console.log('Could not parse Safety results');
           }
-          
+
           const securityComment = `
           ## 🛡️ Security Scan Results
-          
-          ${securityIssues.length === 0 
-            ? '✅ **No security issues detected** in this PR.' 
+
+          ${securityIssues.length === 0
+            ? '✅ **No security issues detected** in this PR.'
             : '⚠️ **Security issues found:**\n\n' + securityIssues.map(issue => `- ${issue}`).join('\n')
           }
-          
+
           ### Security Recommendations
-          
+
           - Always validate user inputs
           - Use parameterized queries to prevent SQL injection
           - Implement proper authentication and authorization
           - Keep dependencies up to date
           - Use HTTPS in production
           - Never commit secrets or API keys
-          
+
           ---
           *Automated security scan - Please review manually for complete security assessment.*
           `;
-          
+
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,

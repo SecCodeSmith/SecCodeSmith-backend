@@ -15,7 +15,7 @@ jobs:
   pre-release:
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -44,13 +44,13 @@ jobs:
         TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
         BRANCH_NAME=${GITHUB_REF#refs/heads/}
         BRANCH_CLEAN=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9-]/-/g')
-        
+
         # Get short commit hash
         COMMIT_HASH=$(git rev-parse --short HEAD)
-        
+
         # Create pre-release version
         VERSION="pre-${TIMESTAMP}-${BRANCH_CLEAN}-${COMMIT_HASH}"
-        
+
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "tag=pre-release-$VERSION" >> $GITHUB_OUTPUT
         echo "name=Pre-release $VERSION" >> $GITHUB_OUTPUT
@@ -69,7 +69,7 @@ jobs:
     - name: Create pre-release archives
       run: |
         mkdir -p dist/
-        
+
         # Create timestamp-based archives
         git archive --format=tar.gz --prefix=SecCodeSmith-backend-${{ steps.version.outputs.version }}/ HEAD > dist/SecCodeSmith-backend-${{ steps.version.outputs.version }}.tar.gz
         git archive --format=zip --prefix=SecCodeSmith-backend-${{ steps.version.outputs.version }}/ HEAD > dist/SecCodeSmith-backend-${{ steps.version.outputs.version }}.zip
@@ -78,37 +78,37 @@ jobs:
       run: |
         cat > DEV_NOTES.md << 'EOF'
         ## 🚧 Development Pre-release
-        
+
         This is an automated pre-release build from the development branch.
-        
+
         ### ⚠️ Important Notes:
         - This is a **development build** and may contain unstable features
         - Not recommended for production use
         - Use for testing and development purposes only
-        
+
         ### 📋 Build Information:
         - **Branch**: `${{ github.ref_name }}`
         - **Commit**: `${{ github.sha }}`
         - **Build Time**: `$(date -u '+%Y-%m-%d %H:%M:%S UTC')`
         - **Workflow**: `${{ github.workflow }}`
-        
+
         ### 🧪 Tests Status:
         - ✅ All tests passed
         - ✅ Code quality checks passed
         - ✅ Security scans completed
-        
+
         ### 📦 What's Included:
         - Source code archive (tar.gz and zip)
         - Development deployment scripts
         - Latest documentation
-        
+
         ### 🚀 Quick Start:
         ```bash
         # Download and extract
         wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/SecCodeSmith-backend-${{ steps.version.outputs.version }}.tar.gz
         tar -xzf SecCodeSmith-backend-${{ steps.version.outputs.version }}.tar.gz
         cd SecCodeSmith-backend-${{ steps.version.outputs.version }}
-        
+
         # Set up and run
         python -m venv .venv
         source .venv/bin/activate
@@ -116,12 +116,12 @@ jobs:
         python manage.py migrate
         python manage.py runserver
         ```
-        
+
         ### 🔗 Related Links:
         - [Main Repository](https://github.com/${{ github.repository }})
         - [Latest Stable Release](https://github.com/${{ github.repository }}/releases/latest)
         - [Development Documentation](https://github.com/${{ github.repository }}/wiki)
-        
+
         ---
         *This pre-release will be automatically cleaned up when newer versions are created.*
         EOF
@@ -163,26 +163,26 @@ jobs:
         cat > dist/dev-deploy.sh << 'EOF'
         #!/bin/bash
         # SecCodeSmith Backend Development Deployment Script
-        
+
         set -e
-        
+
         echo "🚧 Starting SecCodeSmith Backend development deployment..."
         echo "⚠️  This is a development build - not for production!"
-        
+
         # Check for required tools
         command -v python3 >/dev/null 2>&1 || { echo "Python 3 is required but not installed. Aborting." >&2; exit 1; }
         command -v pip >/dev/null 2>&1 || { echo "pip is required but not installed. Aborting." >&2; exit 1; }
-        
+
         # Create virtual environment
         echo "📦 Setting up virtual environment..."
         python3 -m venv .venv
         source .venv/bin/activate
-        
+
         # Install dependencies
         echo "⬇️  Installing dependencies..."
         pip install --upgrade pip
         pip install -r requirements.txt
-        
+
         # Set up environment variables for development
         echo "⚙️  Setting up development environment..."
         cat > .env << 'ENVEOF'
@@ -191,16 +191,16 @@ jobs:
         ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
         DATABASE_TYPE=sqlite
         ENVEOF
-        
+
         # Run migrations
         echo "🗄️  Running database migrations..."
         python manage.py migrate
-        
+
         # Create superuser (optional)
         echo "👤 Creating superuser (optional)..."
         echo "To create a superuser for admin access, run:"
         echo "python manage.py createsuperuser"
-        
+
         # Start development server
         echo "✅ Development deployment complete!"
         echo ""
@@ -211,7 +211,7 @@ jobs:
         echo "📝 Access the API at: http://localhost:8000/"
         echo "🔧 Access admin panel at: http://localhost:8000/admin/"
         EOF
-        
+
         chmod +x dist/dev-deploy.sh
 
     - name: Upload development deployment script

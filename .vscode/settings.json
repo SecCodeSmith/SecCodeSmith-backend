@@ -1,7 +1,7 @@
 {
     "python.defaultInterpreterPath": "./.venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    
+
     // Linting
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
@@ -9,7 +9,7 @@
     "python.linting.banditEnabled": true,
     "python.linting.mypyEnabled": true,
     "python.linting.flake8Args": ["--max-line-length=127"],
-    
+
     // Formatting
     "python.formatting.provider": "none",
     "[python]": {
@@ -19,7 +19,7 @@
             "source.organizeImports": "explicit"
         }
     },
-    
+
     // Testing
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
@@ -28,7 +28,7 @@
         "--verbose",
         "--tb=short"
     ],
-    
+
     // Django specific
     "python.analysis.extraPaths": [
         "."
@@ -36,7 +36,7 @@
     "emmet.includeLanguages": {
         "django-html": "html"
     },
-    
+
     // File associations
     "files.associations": {
         "**/*.html": "html",
@@ -44,7 +44,7 @@
         "**/templates/**": "django-txt",
         "**/requirements{/**,*}.{txt,in}": "pip-requirements"
     },
-    
+
     // File exclusions
     "files.exclude": {
         "**/__pycache__": true,
@@ -56,7 +56,7 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true
     },
-    
+
     // Search exclusions
     "search.exclude": {
         "**/__pycache__": true,
@@ -67,7 +67,7 @@
         "**/*.pyc": true,
         ".pytest_cache": true
     },
-    
+
     // Editor settings
     "editor.rulers": [127],
     "editor.tabSize": 4,
@@ -75,10 +75,10 @@
     "editor.trimAutoWhitespace": true,
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
-    
+
     // Git settings
     "git.ignoreLimitWarning": true,
-    
+
     // Terminal settings
     "terminal.integrated.env.linux": {
         "DJANGO_SETTINGS_MODULE": "SecCodeSmithBackend.settings"
