@@ -1,0 +1,61 @@
+{
+    "recommendations": [
+        // Python essentials
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-python.flake8",
+        "ms-python.isort",
+        
+        // Django specific
+        "batisteo.vscode-django",
+        "wholroyd.jinja",
+        
+        // Code quality and formatting
+        "ms-python.black-formatter",
+        "ms-python.pylint",
+        "ms-python.mypy-type-checker",
+        
+        // Git and version control
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        
+        // AI assistance
+        "github.copilot",
+        "github.copilot-chat",
+        
+        // Docker support
+        "ms-azuretools.vscode-docker",
+        
+        // File types and syntax
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        
+        // Collaboration
+        "ms-vsliveshare.vsliveshare",
+        
+        // Productivity
+        "ms-vscode.vscode-todo-highlight",
+        "streetsidesoftware.code-spell-checker",
+        "esbenp.prettier-vscode",
+        
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+        
+        // Database
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "mtxr.sqltools-driver-sqlite",
+        
+        // REST API testing
+        "humao.rest-client",
+        
+        // Documentation
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint"
+    ],
+    "unwantedRecommendations": [
+        "ms-python.pylint"
+    ]
+}

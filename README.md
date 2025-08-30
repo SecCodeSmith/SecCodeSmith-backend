@@ -3,7 +3,16 @@
 [![CI/CD Pipeline](https://github.com/SecCodeSmith/SecCodeSmith-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/SecCodeSmith/SecCodeSmith-backend/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Django 5.2+](https://img.shields.io/badge/django-5.2+-green.svg)](https://www.djangoproject.com/)
+[![Django REST Framework](https://img.shields.io/badge/DRF-3.16+-red.svg)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-15+-blue.svg)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/redis-7+-red.svg)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![codecov](https://codecov.io/gh/SecCodeSmith/SecCodeSmith-backend/branch/main/graph/badge.svg)](https://codecov.io/gh/SecCodeSmith/SecCodeSmith-backend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Security: bandit](https://img.shields.io/badge/security-bandit-green.svg)](https://github.com/PyCQA/bandit)
+[![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 This repository contains the Django-powered REST API backend for the SecCodeSmith portfolio website. It provides endpoints for blog posts, project showcases, image properties, and static page content (About, Contact, Skills, Footer Links).
 
@@ -80,24 +89,60 @@ SecCodeSmith Backend serves as the data layer for the portfolio site, supplying 
 
 Get up and running in less than 5 minutes:
 
+**Linux/macOS:**
 ```bash
 # Clone the repository
 git clone https://github.com/SecCodeSmith/SecCodeSmith-backend.git
 cd SecCodeSmith-backend
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Make script executable and setup
+chmod +x dev.sh
+./dev.sh setup
 
-# Install dependencies
-pip install -r requirements.txt
+# Start the server
+./dev.sh runserver
+```
 
-# Run migrations and start server
-python manage.py migrate
-python manage.py runserver
+**Windows:**
+```cmd
+# Clone the repository
+git clone https://github.com/SecCodeSmith/SecCodeSmith-backend.git
+cd SecCodeSmith-backend
+
+# Setup environment
+dev.bat setup
+
+# Start the server
+dev.bat runserver
+```
+
+**Using Make (Linux/macOS):**
+```bash
+# Setup development environment
+make setup
+
+# Start the server
+make runserver
 ```
 
 The API will be available at `http://127.0.0.1:8000/`
+
+### 🎯 Development Scripts
+
+This project includes convenient development scripts:
+
+- **Linux/macOS**: `./dev.sh [command]`
+- **Windows**: `dev.bat [command]`
+- **Make**: `make [target]` (Linux/macOS only)
+
+Available commands:
+- `setup` - Complete development environment setup
+- `test` - Run test suite
+- `lint` - Run code quality checks
+- `format` - Format code with black and isort
+- `runserver` - Start Django development server
+- `migrate` - Run database migrations
+- `security` - Run security scans
 
 ---
 
@@ -328,6 +373,43 @@ docker-compose down
 
 ---
 
+## VS Code Setup
+
+This project is optimized for Visual Studio Code with comprehensive configuration:
+
+### 🚀 Quick Setup
+
+1. **Open the workspace**: Use `SecCodeSmith-backend.code-workspace`
+2. **Install recommended extensions**: VS Code will prompt you automatically
+3. **Select Python interpreter**: Choose `.venv/bin/python` when prompted
+
+### 🔧 Pre-configured Features
+
+- **Debugging**: Ready-to-use debug configurations for Django
+- **Testing**: Integrated pytest runner with coverage
+- **Linting**: Automated code quality checks
+- **Formatting**: Auto-format on save with Black
+- **Tasks**: One-click Django commands (F1 → "Tasks: Run Task")
+
+### 📋 Available Debug Configurations
+
+- `Django: Run Server` - Start development server with debugging
+- `Django: Run Tests` - Run test suite with debugging
+- `Django: Shell` - Open Django shell with debugging
+- `Django: Migrate` - Run migrations
+- `Django: Make Migrations` - Create new migrations
+
+### ⚡ VS Code Tasks
+
+Access via `Ctrl+Shift+P` → "Tasks: Run Task":
+- Django: Run Server
+- Django: Run Tests (with coverage)
+- Code Quality: Lint/Format
+- Security: Scan with Bandit
+- Install Dependencies
+
+---
+
 ## API Reference
 
 ### General API
@@ -459,6 +541,7 @@ Every push and pull request triggers:
 - PostgreSQL and Redis service containers
 - Full test suite execution with pytest
 - Django system checks
+- Code coverage reporting with Codecov
 
 **🔍 Code Quality Pipeline:**
 - Linting with flake8
@@ -468,6 +551,14 @@ Every push and pull request triggers:
 **🛡️ Security Pipeline:**
 - Security vulnerability scanning with bandit
 - Dependency vulnerability check with safety
+- Semgrep static analysis
+
+**🤖 AI-Powered Review Pipeline:**
+- GitHub Copilot code review on PRs
+- Automated code suggestions and improvements
+- Django-specific best practices analysis
+- Performance optimization recommendations
+- Type checking with mypy
 
 **🐳 Docker Pipeline:**
 - Docker image build and test (on main branch)
@@ -479,6 +570,14 @@ The README includes badges showing:
 - 🐍 Python version compatibility
 - 🌐 Django version
 - 📜 License information
+- 📊 Code coverage percentage
+
+### Automated Code Review
+
+- **🤖 GitHub Copilot**: Automated code review for PRs
+- **💡 AI Suggestions**: Performance and best practices recommendations
+- **🔍 Code Analysis**: Static analysis with pylint, mypy, and vulture
+- **🛡️ Security Scanning**: Comprehensive security analysis
 
 ### Branch Protection
 

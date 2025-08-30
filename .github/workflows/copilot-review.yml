@@ -1,0 +1,241 @@
+name: Copilot Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  copilot-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v40
+      with:
+        files: |
+          **/*.py
+          **/*.md
+          **/*.yml
+          **/*.yaml
+          **/*.json
+          **/*.txt
+          requirements*.txt
+          Dockerfile
+          docker-compose*.yml
+
+    - name: Copilot Code Review
+      if: steps.changed-files.outputs.any_changed == 'true'
+      uses: github/copilot-code-review-action@v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        files: ${{ steps.changed-files.outputs.all_changed_files }}
+        review-comment-prefix: "🤖 **Copilot Review**: "
+        max-files: 20
+        exclude-patterns: |
+          **/migrations/**
+          **/__pycache__/**
+          **/*.pyc
+          **/node_modules/**
+          **/.git/**
+
+    - name: Django Code Analysis
+      if: steps.changed-files.outputs.any_changed == 'true'
+      run: |
+        echo "## 🐍 Django Code Analysis" >> analysis.md
+        echo "" >> analysis.md
+        
+        # Check for Django best practices
+        echo "### Django Best Practices Check" >> analysis.md
+        
+        # Check for security issues
+        if grep -r "DEBUG = True" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__"; then
+          echo "⚠️ **Warning**: Found DEBUG=True in code. Ensure this is not in production settings." >> analysis.md
+        fi
+        
+        # Check for hardcoded secrets
+        if grep -r "SECRET_KEY.*=" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | grep -v "env("; then
+          echo "⚠️ **Warning**: Potential hardcoded SECRET_KEY found. Use environment variables." >> analysis.md
+        fi
+        
+        # Check for missing migrations
+        if python manage.py makemigrations --dry-run --check; then
+          echo "✅ **Good**: No missing migrations detected." >> analysis.md
+        else
+          echo "⚠️ **Warning**: Missing migrations detected. Run 'python manage.py makemigrations'." >> analysis.md
+        fi
+        
+        # Check for proper error handling
+        echo "" >> analysis.md
+        echo "### Code Quality Observations" >> analysis.md
+        
+        # Count TODO comments
+        TODO_COUNT=$(grep -r "TODO\|FIXME\|XXX" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | wc -l || echo "0")
+        echo "📝 **TODO/FIXME Comments**: $TODO_COUNT found" >> analysis.md
+        
+        # Check for print statements (should use logging)
+        PRINT_COUNT=$(grep -r "print(" . --include="*.py" | grep -v ".venv" | grep -v "__pycache__" | grep -v "test" | wc -l || echo "0")
+        if [ "$PRINT_COUNT" -gt 0 ]; then
+          echo "⚠️ **Suggestion**: Found $PRINT_COUNT print statements. Consider using Django logging instead." >> analysis.md
+        fi
+
+    - name: Post Analysis Comment
+      if: steps.changed-files.outputs.any_changed == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let analysisContent = '';
+          if (fs.existsSync('analysis.md')) {
+            analysisContent = fs.readFileSync('analysis.md', 'utf8');
+          }
+          
+          const comment = `
+          ## 🤖 Automated Code Review
+          
+          Thanks for your contribution! Here's an automated analysis of your changes:
+          
+          ${analysisContent}
+          
+          ### 📋 Checklist for Reviewers
+          
+          - [ ] Code follows Django best practices
+          - [ ] Tests are included for new functionality
+          - [ ] Documentation is updated if needed
+          - [ ] No hardcoded secrets or sensitive data
+          - [ ] Migrations are included if models changed
+          - [ ] Error handling is appropriate
+          - [ ] Security considerations are addressed
+          
+          ### 🧪 Testing
+          
+          Please ensure:
+          - [ ] All existing tests pass
+          - [ ] New tests cover the changes
+          - [ ] Manual testing has been performed
+          
+          ---
+          *This review was generated automatically. Human review is still required.*
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety semgrep
+
+    - name: Run Bandit Security Scan
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . --severity-level medium > bandit-results.txt || true
+
+    - name: Run Safety Check
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check > safety-results.txt || true
+
+    - name: Run Semgrep
+      run: |
+        semgrep --config=auto --json --output=semgrep-report.json . || true
+
+    - name: Post Security Analysis
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let securityIssues = [];
+          
+          // Parse Bandit results
+          try {
+            if (fs.existsSync('bandit-results.txt')) {
+              const banditResults = fs.readFileSync('bandit-results.txt', 'utf8');
+              if (banditResults.includes('Issue:')) {
+                securityIssues.push('🔒 **Bandit**: Security issues detected');
+              }
+            }
+          } catch (e) {
+            console.log('Could not parse Bandit results');
+          }
+          
+          // Parse Safety results
+          try {
+            if (fs.existsSync('safety-results.txt')) {
+              const safetyResults = fs.readFileSync('safety-results.txt', 'utf8');
+              if (safetyResults.includes('vulnerability') || safetyResults.includes('VULNERABILITY')) {
+                securityIssues.push('📦 **Safety**: Vulnerable dependencies detected');
+              }
+            }
+          } catch (e) {
+            console.log('Could not parse Safety results');
+          }
+          
+          const securityComment = `
+          ## 🛡️ Security Scan Results
+          
+          ${securityIssues.length === 0 
+            ? '✅ **No security issues detected** in this PR.' 
+            : '⚠️ **Security issues found:**\n\n' + securityIssues.map(issue => `- ${issue}`).join('\n')
+          }
+          
+          ### Security Recommendations
+          
+          - Always validate user inputs
+          - Use parameterized queries to prevent SQL injection
+          - Implement proper authentication and authorization
+          - Keep dependencies up to date
+          - Use HTTPS in production
+          - Never commit secrets or API keys
+          
+          ---
+          *Automated security scan - Please review manually for complete security assessment.*
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: securityComment
+          });
