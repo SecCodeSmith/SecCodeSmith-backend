@@ -1,0 +1,269 @@
+name: AI Code Suggestions
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  ai-suggestions:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pylint mypy autopep8 vulture
+
+    - name: Get changed Python files
+      id: changed-python-files
+      uses: tj-actions/changed-files@v40
+      with:
+        files: |
+          **/*.py
+        files_ignore: |
+          **/migrations/**
+          **/tests/**
+          **/__pycache__/**
+
+    - name: Run Code Analysis
+      if: steps.changed-python-files.outputs.any_changed == 'true'
+      run: |
+        echo "## 🔍 Code Analysis & Suggestions" > suggestions.md
+        echo "" >> suggestions.md
+
+        # Create array of changed files
+        IFS=' ' read -ra CHANGED_FILES <<< "${{ steps.changed-python-files.outputs.all_changed_files }}"
+
+        for file in "${CHANGED_FILES[@]}"; do
+          if [[ -f "$file" ]]; then
+            echo "### 📄 Analysis for \`$file\`" >> suggestions.md
+            echo "" >> suggestions.md
+
+            # Run pylint for code quality
+            echo "#### 📊 Code Quality (Pylint)" >> suggestions.md
+            pylint "$file" --output-format=text --score=yes --reports=no 2>/dev/null | head -20 >> suggestions.md || echo "No pylint issues found." >> suggestions.md
+            echo "" >> suggestions.md
+
+            # Run mypy for type checking
+            echo "#### 🔍 Type Checking (MyPy)" >> suggestions.md
+            mypy "$file" --no-error-summary 2>/dev/null | head -10 >> suggestions.md || echo "No type issues found." >> suggestions.md
+            echo "" >> suggestions.md
+
+            # Check for dead code
+            echo "#### 🧹 Dead Code Detection" >> suggestions.md
+            vulture "$file" 2>/dev/null | head -10 >> suggestions.md || echo "No dead code detected." >> suggestions.md
+            echo "" >> suggestions.md
+
+            echo "---" >> suggestions.md
+            echo "" >> suggestions.md
+          fi
+        done
+
+        # Add general suggestions
+        echo "## 💡 General Suggestions" >> suggestions.md
+        echo "" >> suggestions.md
+        echo "### 🎯 Django Best Practices" >> suggestions.md
+        echo "- Use Django's built-in validators instead of custom validation where possible" >> suggestions.md
+        echo "- Implement proper error handling with try-catch blocks" >> suggestions.md
+        echo "- Use Django's timezone utilities for datetime operations" >> suggestions.md
+        echo "- Consider using select_related() and prefetch_related() for database optimization" >> suggestions.md
+        echo "- Add docstrings to all public methods and classes" >> suggestions.md
+        echo "" >> suggestions.md
+
+        echo "### 🔐 Security Recommendations" >> suggestions.md
+        echo "- Validate and sanitize all user inputs" >> suggestions.md
+        echo "- Use Django's built-in CSRF protection" >> suggestions.md
+        echo "- Implement proper authentication and authorization checks" >> suggestions.md
+        echo "- Use Django's ORM to prevent SQL injection attacks" >> suggestions.md
+        echo "" >> suggestions.md
+
+        echo "### 🚀 Performance Tips" >> suggestions.md
+        echo "- Use database indexes for frequently queried fields" >> suggestions.md
+        echo "- Implement caching for expensive operations" >> suggestions.md
+        echo "- Consider using async views for I/O-bound operations" >> suggestions.md
+        echo "- Use pagination for large datasets" >> suggestions.md
+
+    - name: Check Test Coverage
+      if: steps.changed-python-files.outputs.any_changed == 'true'
+      run: |
+        echo "" >> suggestions.md
+        echo "## 🧪 Test Coverage Analysis" >> suggestions.md
+        echo "" >> suggestions.md
+
+        # Run pytest with coverage for changed files
+        coverage run -m pytest --tb=short || true
+        coverage report --include="${{ steps.changed-python-files.outputs.all_changed_files }}" >> suggestions.md || echo "Coverage data not available" >> suggestions.md
+
+    - name: Django-specific Analysis
+      if: steps.changed-python-files.outputs.any_changed == 'true'
+      run: |
+        echo "" >> suggestions.md
+        echo "## 🐍 Django-Specific Analysis" >> suggestions.md
+        echo "" >> suggestions.md
+
+        # Check for Django migrations
+        if python manage.py makemigrations --dry-run --verbosity=0 2>/dev/null; then
+          echo "✅ **Migrations**: No pending migrations" >> suggestions.md
+        else
+          echo "⚠️ **Migrations**: Pending migrations detected. Run \`python manage.py makemigrations\`" >> suggestions.md
+        fi
+        echo "" >> suggestions.md
+
+        # Check Django system
+        echo "### 🔧 Django System Check" >> suggestions.md
+        python manage.py check --verbosity=0 >> suggestions.md 2>&1 || echo "System check completed with issues" >> suggestions.md
+
+    - name: Post AI Suggestions
+      if: steps.changed-python-files.outputs.any_changed == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          let suggestions = '';
+          if (fs.existsSync('suggestions.md')) {
+            suggestions = fs.readFileSync('suggestions.md', 'utf8');
+
+            // Truncate if too long for GitHub comment
+            if (suggestions.length > 65000) {
+              suggestions = suggestions.substring(0, 65000) + '\n\n... (truncated for length)';
+            }
+          }
+
+          const comment = `
+          ## 🤖 AI-Powered Code Suggestions
+
+          ${suggestions || 'No specific suggestions for the changed files.'}
+
+          ### 📚 Additional Resources
+
+          - [Django Best Practices](https://docs.djangoproject.com/en/stable/misc/design-philosophies/)
+          - [Django Security](https://docs.djangoproject.com/en/stable/topics/security/)
+          - [Python PEP 8 Style Guide](https://pep8.org/)
+          - [Django REST Framework Best Practices](https://www.django-rest-framework.org/community/3.0-announcement/)
+
+          ### 🤝 Next Steps
+
+          1. Review the suggestions above
+          2. Apply relevant improvements
+          3. Add/update tests if needed
+          4. Update documentation
+          5. Request human review
+
+          ---
+          *AI-generated suggestions - Use your judgment to apply relevant recommendations.*
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  performance-analysis:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install django-debug-toolbar memory-profiler
+
+    - name: Run Performance Tests
+      run: |
+        echo "## ⚡ Performance Analysis" > performance.md
+        echo "" >> performance.md
+
+        # Test Django startup time
+        echo "### 🚀 Django Startup Time" >> performance.md
+        echo "\`\`\`" >> performance.md
+        time python manage.py check 2>&1 | head -10 >> performance.md
+        echo "\`\`\`" >> performance.md
+        echo "" >> performance.md
+
+        # Check for N+1 queries potential
+        echo "### 🗃️ Database Query Analysis" >> performance.md
+        echo "Look for potential N+1 query issues in your models and views:" >> performance.md
+        echo "- Use \`select_related()\` for foreign key relationships" >> performance.md
+        echo "- Use \`prefetch_related()\` for many-to-many relationships" >> performance.md
+        echo "- Consider database indexing for frequently queried fields" >> performance.md
+        echo "" >> performance.md
+
+        echo "### 💾 Memory Usage Recommendations" >> performance.md
+        echo "- Use generator expressions for large datasets" >> performance.md
+        echo "- Implement pagination for API endpoints" >> performance.md
+        echo "- Consider using \`only()\` and \`defer()\` for selective field loading" >> performance.md
+        echo "- Use caching for expensive computations" >> performance.md
+
+    - name: Post Performance Analysis
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          let performanceAnalysis = '';
+          if (fs.existsSync('performance.md')) {
+            performanceAnalysis = fs.readFileSync('performance.md', 'utf8');
+          }
+
+          const comment = `
+          ${performanceAnalysis}
+
+          ### 🎯 Performance Optimization Tips
+
+          1. **Database Optimization**
+             - Add indexes to frequently queried fields
+             - Use select_related() and prefetch_related()
+             - Consider database connection pooling
+
+          2. **Caching Strategy**
+             - Implement Redis caching for expensive operations
+             - Use Django's cache framework
+             - Consider CDN for static assets
+
+          3. **Code Optimization**
+             - Use generator expressions for large datasets
+             - Implement proper pagination
+             - Optimize serializers and views
+
+          ---
+          *Performance suggestions based on Django best practices.*
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

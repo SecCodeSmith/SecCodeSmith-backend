@@ -2,19 +2,22 @@ import io
 import os
 import uuid
 
-from PIL import Image as PILImage
 from django.contrib import admin
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.utils.text import slugify
+from PIL import Image as PILImage
 
 from api.models import *
+
 # ===========================
 #  Basic lookup / autocomplete helpers
 # ===========================
 
+
 class AutocompleteByNameMixin:
     """Enable select2-style look‑ups for large FK/M2M relations."""
+
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -22,6 +25,7 @@ class AutocompleteByNameMixin:
 # ===========================
 #  Icons & Languages
 # ===========================
+
 
 @admin.register(IconsClass)
 class IconsClassAdmin(admin.ModelAdmin):
@@ -41,6 +45,7 @@ class LangAdmin(admin.ModelAdmin):
 #  Contact & Social
 # ===========================
 
+
 @admin.register(SocialLinks)
 class SocialLinksAdmin(admin.ModelAdmin):
     list_display = (
@@ -55,10 +60,15 @@ class SocialLinksAdmin(admin.ModelAdmin):
     list_filter = ("footer", "contact_pages", "about_pages")
     search_fields = ("name", "url")
 
+
 class CommentInline(admin.TabularInline):
     model = FAQ
     extra = 0
-    fields = ("question", "answer",)
+    fields = (
+        "question",
+        "answer",
+    )
+
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
@@ -72,6 +82,7 @@ class ContactAdmin(admin.ModelAdmin):
 # ===========================
 #  Skills & Skill Cards
 # ===========================
+
 
 class SkillInline(admin.TabularInline):
     model = SkillsCard.skills.through
@@ -100,6 +111,7 @@ class SkillsCardAdmin(admin.ModelAdmin):
 #  Core Values & FAQ
 # ===========================
 
+
 @admin.register(CoreValue)
 class CoreValueAdmin(admin.ModelAdmin):
     list_display = ("title", "icon")
@@ -118,6 +130,7 @@ class FAQAdmin(admin.ModelAdmin):
 #  Professional Journey & Technical Arsenal
 # ===========================
 
+
 @admin.register(ProfessionalJourney)
 class ProfessionalJourneyAdmin(admin.ModelAdmin):
     list_display = ("title", "company", "start_date", "end_date", "duration")
@@ -132,10 +145,12 @@ class TechnicalArsenalSkillAdmin(admin.ModelAdmin):
     list_display = ("text",)
     search_fields = ("text",)
 
+
 class TechnicalArsenalSkillInLine(admin.TabularInline):
     model = TechnicalArsenalSkill
     extra = 0
     fields = ("text",)
+
 
 @admin.register(TechnicalArsenal)
 class TechnicalArsenalAdmin(admin.ModelAdmin):
@@ -164,16 +179,24 @@ class TechnicalArsenalInline(admin.TabularInline):
     show_change_link = True
     show_full_result_link = True
 
+
 class TestimonialInline(admin.TabularInline):
     model = Testimonials
     extra = 0
-    fields = ("author", "email", "position", "text", )
+    fields = (
+        "author",
+        "email",
+        "position",
+        "text",
+    )
+
 
 class CoreValueInline(admin.TabularInline):
     model = CoreValue
     extra = 0
     fields = ("title", "icon", "description", "about")
     autocomplete_fields = ("icon",)
+
 
 @admin.register(Testimonials)
 class TestimonialsAdmin(admin.ModelAdmin):
@@ -186,11 +209,16 @@ class AboutAdmin(admin.ModelAdmin):
     list_display = ("lang", "about_title")
     search_fields = ("about_title", "about_text")
     autocomplete_fields = ("lang",)
-    inlines = [JourneyInline, TechnicalArsenalInline,
-               TestimonialInline, CoreValueInline]
-    readonly_fields = ('image_tag', )
+    inlines = [
+        JourneyInline,
+        TechnicalArsenalInline,
+        TestimonialInline,
+        CoreValueInline,
+    ]
+    readonly_fields = ("image_tag",)
+
     def save_model(self, request, obj, form, change):
-        if 'image' in form.changed_data and obj.image:
+        if "image" in form.changed_data and obj.image:
 
             old_name = None
             if change:
@@ -205,11 +233,11 @@ class AboutAdmin(admin.ModelAdmin):
             slug = slugify(obj.name)
             new_name = f"{slug}-{uuid.uuid4().hex}.webp"
 
-            if ext != '.webp':
+            if ext != ".webp":
                 img = PILImage.open(obj.image)
-                img = img.convert('RGBA')
+                img = img.convert("RGBA")
                 buff = io.BytesIO()
-                img.save(buff, format='WEBP', quality=85, method=6)
+                img.save(buff, format="WEBP", quality=85, method=6)
                 buff.seek(0)
                 obj.image.save(new_name, ContentFile(buff.read()), save=False)
                 img.close()
@@ -221,4 +249,3 @@ class AboutAdmin(admin.ModelAdmin):
                 default_storage.delete(old_name)
 
         super().save_model(request, obj, form, change)
-

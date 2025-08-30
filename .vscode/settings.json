@@ -1,7 +1,92 @@
 {
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+
+    // Linting
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.banditEnabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.flake8Args": ["--max-line-length=127"],
+
+    // Formatting
+    "python.formatting.provider": "none",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+
+    // Testing
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
     "python.testing.pytestArgs": [
+        ".",
+        "--verbose",
+        "--tb=short"
+    ],
+
+    // Django specific
+    "python.analysis.extraPaths": [
         "."
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+
+    // File associations
+    "files.associations": {
+        "**/*.html": "html",
+        "**/templates/**/*.html": "django-html",
+        "**/templates/**": "django-txt",
+        "**/requirements{/**,*}.{txt,in}": "pip-requirements"
+    },
+
+    // File exclusions
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/migrations/__pycache__": true,
+        ".pytest_cache": true,
+        "htmlcov": true,
+        ".coverage": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
+
+    // Search exclusions
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/migrations": false,
+        ".venv": true,
+        "venv": true,
+        "htmlcov": true,
+        "**/*.pyc": true,
+        ".pytest_cache": true
+    },
+
+    // Editor settings
+    "editor.rulers": [127],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.trimAutoWhitespace": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    // Git settings
+    "git.ignoreLimitWarning": true,
+
+    // Terminal settings
+    "terminal.integrated.env.linux": {
+        "DJANGO_SETTINGS_MODULE": "SecCodeSmithBackend.settings"
+    },
+    "terminal.integrated.env.osx": {
+        "DJANGO_SETTINGS_MODULE": "SecCodeSmithBackend.settings"
+    },
+    "terminal.integrated.env.windows": {
+        "DJANGO_SETTINGS_MODULE": "SecCodeSmithBackend.settings"
+    }
 }

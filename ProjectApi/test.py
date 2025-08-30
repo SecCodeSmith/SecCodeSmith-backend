@@ -2,19 +2,18 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
+
+from api.models import IconsClass
 
 from .models import *
-from api.models import IconsClass
+
 
 class ProjectViewsTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.icon = IconsClass.objects.create(
-            name="GitHub",
-            class_name="fab fa-github"
-        )
+        self.icon = IconsClass.objects.create(name="GitHub", class_name="fab fa-github")
         self.category = ProjectCategory.objects.create(
             category_name="Web Development",
             icon=self.icon,
@@ -32,7 +31,6 @@ class ProjectViewsTest(TestCase):
             icon=self.icon2,
             name="React",
         )
-
 
         image_file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
 
@@ -55,26 +53,19 @@ class ProjectViewsTest(TestCase):
             role="Developer",
             client="Test Client",
             project=self.project,
-
         )
 
         self.project.main_technologies.add(self.tech1)
         self.project_detail.full_technologies.add(self.tech1, self.tech2)
 
-        self.gallery = ProjectGallery.objects.create(
-            alternative_text="Alt 1",
-            image=image_file,
-            project=self.project
-        )
+        self.gallery = ProjectGallery.objects.create(alternative_text="Alt 1", image=image_file, project=self.project)
 
-        self.feature = KeyFeatures.objects.create(
-            name="Feature 1",
-            project=self.project
-        )
+        self.feature = KeyFeatures.objects.create(name="Feature 1", project=self.project)
 
-        self.projects = reverse('projects:projects')
-        self.projects_detail = lambda pk: reverse('projects:project-detail', kwargs={'project_id': pk})
-        self.cat = reverse('projects:project-category')
+        self.projects = reverse("projects:projects")
+        self.projects_detail = lambda pk: reverse("projects:project-detail", kwargs={"project_id": pk})
+        self.cat = reverse("projects:project-category")
+
     def tearDown(self):
         self.project.image.delete(save=False)
         for img in ProjectGallery.objects.all():
@@ -84,21 +75,21 @@ class ProjectViewsTest(TestCase):
         response = self.client.get(self.projects)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], "Test Project")
-        self.assertEqual(response.data[0]['featured'], True)
+        self.assertEqual(response.data[0]["title"], "Test Project")
+        self.assertEqual(response.data[0]["featured"], True)
 
     def test_get_project_detail(self):
         pk = self.project.pk
         url = self.projects_detail(pk)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['title'], "Test Project")
-        self.assertEqual(response.data['project_details']['role'], "Developer")
-        self.assertEqual(response.data['project_details']['key_features'], ["Feature 1"])
-        self.assertEqual(response.data['project_details']['full_tech_stack'][0]['name'], "Django")
+        self.assertEqual(response.data["title"], "Test Project")
+        self.assertEqual(response.data["project_details"]["role"], "Developer")
+        self.assertEqual(response.data["project_details"]["key_features"], ["Feature 1"])
+        self.assertEqual(response.data["project_details"]["full_tech_stack"][0]["name"], "Django")
 
     def test_get_project_detail_not_found(self):
-        response = self.client.get('/projects/999/')  # Non-existent ID
+        response = self.client.get("/projects/999/")  # Non-existent ID
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_project_categories_list(self):
@@ -106,4 +97,4 @@ class ProjectViewsTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['countOfProject'], 1)
+        self.assertEqual(response.data[0]["countOfProject"], 1)
