@@ -20,7 +20,7 @@ env = environ.Env(
         "django-insecure-kxr)0+uz_9=jdz0elc)-cbmxc2k5@(*)=cym0#r$s&(x#qzy&p",
     ),
     ALLOWED_HOSTS=(list, ["*"]),
-    DATABASE_TYPE=(str, "pgsql"),
+    DATABASE_TYPE=(str, ""),
     DATABASE_USER=(str, "postgres"),
     DATABASE_PASSWORD=(str, "postgres"),
     DATABASE_HOST=(str, "localhost"),
