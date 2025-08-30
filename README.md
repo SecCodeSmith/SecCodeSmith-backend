@@ -596,10 +596,8 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## Contact
 
-- **Project Repository**: [SecCodeSmith-backend](https://github.com/SecCodeSmith/SecCodeSmith-backend)
-- **Organization**: [SecCodeSmith](https://github.com/SecCodeSmith)
 - **Issues**: [Report a Bug](https://github.com/SecCodeSmith/SecCodeSmith-backend/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/SecCodeSmith/SecCodeSmith-backend/discussions)
+- **SecCodeSmith** - [contact@seccodesmith.pl](mailto:contact@seccodesmith.pl)
 
 ---
 
