@@ -12,9 +12,7 @@ class ImageProps(APIView):
 
     def get(self, request, name=None):
         if not name:
-            return Response(
-                {"error": "Name is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Name is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             image = Image.objects.get(name=name)
 
@@ -23,14 +21,8 @@ class ImageProps(APIView):
             return Response(data, status=status.HTTP_200_OK)
 
         except Image.DoesNotExist:
-            return JsonResponse(
-                {"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
         except Image.MultipleObjectsReturned:
-            return JsonResponse(
-                {"error": "Problem with database"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return JsonResponse({"error": "Problem with database"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return JsonResponse(
-                {"error": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return JsonResponse({"error": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

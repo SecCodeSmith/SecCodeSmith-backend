@@ -13,9 +13,7 @@ def validate_url_or_mailto(value):
         try:
             EmailValidator()(email)
         except ValidationError:
-            raise ValidationError(
-                "Enter a valid mailto: link, e.g. mailto:you@example.com"
-            )
+            raise ValidationError("Enter a valid mailto: link, e.g. mailto:you@example.com")
     else:
         # only allow http(s) here
         URLValidator(schemes=["http", "https"])(value)

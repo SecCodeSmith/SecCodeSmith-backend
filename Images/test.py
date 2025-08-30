@@ -12,17 +12,11 @@ from Images.models import Image
 class ImagePropsTests(APITestCase):
     def setUp(self):
         # Create a sample image file
-        self.sample_file = SimpleUploadedFile(
-            name="test.jpg", content=b"file_content", content_type="image/jpeg"
-        )
+        self.sample_file = SimpleUploadedFile(name="test.jpg", content=b"file_content", content_type="image/jpeg")
         # Create a valid image entry
-        self.image = Image.objects.create(
-            name="existing", alt="An existing image", image=self.sample_file
-        )
+        self.image = Image.objects.create(name="existing", alt="An existing image", image=self.sample_file)
         # Helper to build detail URLs
-        self.detail_url = lambda name: reverse(
-            "image:image_list", kwargs={"name": name}
-        )
+        self.detail_url = lambda name: reverse("image:image_list", kwargs={"name": name})
 
     def tearDown(self):
         self.image.image.delete(save=False)

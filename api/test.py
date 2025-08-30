@@ -34,12 +34,8 @@ class SkillCardsViewTests(TestCase):
         self.view = SkillCards.as_view()
         self.url = "/api/skills-cards"
 
-        self.icon1 = IconsClass.objects.create(
-            name="GitHub", class_name="fas fa-github", description="GitHub icon"
-        )
-        self.icon2 = IconsClass.objects.create(
-            name="LinkedIn", class_name="fas fa-linkedin", description="LinkedIn icon"
-        )
+        self.icon1 = IconsClass.objects.create(name="GitHub", class_name="fas fa-github", description="GitHub icon")
+        self.icon2 = IconsClass.objects.create(name="LinkedIn", class_name="fas fa-linkedin", description="LinkedIn icon")
 
         self.skill_a = Skill.objects.create(name="Python", icon_class=self.icon1)
         self.skill_b = Skill.objects.create(name="Django", icon_class=self.icon2)
@@ -74,9 +70,7 @@ class SkillCardsViewTests(TestCase):
 
         # Verify structure against the data created in setUp, NOT hardcoded values
         self.assertEqual(card_data["categoryTitle"], self.skills_card.category_title)
-        self.assertEqual(
-            card_data["categoryIcon"], self.skills_card.icon_class.class_name
-        )
+        self.assertEqual(card_data["categoryIcon"], self.skills_card.icon_class.class_name)
 
         skills_list = card_data["skills"]
         self.assertIsInstance(skills_list, list)
@@ -112,13 +106,9 @@ class AboutPageViewTests(APITestCase):
             language=self.lang_en,
         )
 
-        self.sample_file = SimpleUploadedFile(
-            name="test.jpg", content=b"file_content", content_type="image/jpeg"
-        )
+        self.sample_file = SimpleUploadedFile(name="test.jpg", content=b"file_content", content_type="image/jpeg")
 
-        self.icon = IconsClass.objects.create(
-            name="SampleIcon", class_name="fas fa-sample", description="Sample icon"
-        )
+        self.icon = IconsClass.objects.create(name="SampleIcon", class_name="fas fa-sample", description="Sample icon")
 
         self.about = About.objects.create(
             about_title="About Me Section",
@@ -135,9 +125,7 @@ class AboutPageViewTests(APITestCase):
             about=self.about,
         )
 
-        self.tech_arsenal = TechnicalArsenal.objects.create(
-            icon=self.icon, title="Python Stack", about=self.about
-        )
+        self.tech_arsenal = TechnicalArsenal.objects.create(icon=self.icon, title="Python Stack", about=self.about)
 
         self.prof_journey = ProfessionalJourney.objects.create(
             title="Backend Developer",
@@ -148,9 +136,7 @@ class AboutPageViewTests(APITestCase):
             about=self.about,
         )
 
-        self.tech_skill = TechnicalArsenalSkill.objects.create(
-            text="Django", technical_arsenal=self.tech_arsenal
-        )
+        self.tech_skill = TechnicalArsenalSkill.objects.create(text="Django", technical_arsenal=self.tech_arsenal)
         self.core_value = CoreValue.objects.create(
             about=self.about,
             title="Integrity",
@@ -239,9 +225,7 @@ class AboutPageViewTests(APITestCase):
         if tst_list:
             self.assertEqual(len(tst_list), 1)
             tst_item = tst_list[0]
-            self.assertEqual(
-                tst_item.get("author", tst_item.get("autor")), self.testimonial.author
-            )
+            self.assertEqual(tst_item.get("author", tst_item.get("autor")), self.testimonial.author)
             self.assertEqual(tst_item["position"], self.testimonial.position)
             self.assertEqual(tst_item["text"], self.testimonial.text)
 
@@ -374,9 +358,7 @@ class APITests(APITestCase):
         self.client = APIClient()
         self.icon = IconsClass.objects.create(class_name="fas fa-tools")
         self.skill = Skill.objects.create(name="JavaScript", icon_class=self.icon)
-        self.card = SkillsCard.objects.create(
-            category_title="Frontend", icon_class=self.icon
-        )
+        self.card = SkillsCard.objects.create(category_title="Frontend", icon_class=self.icon)
         self.card.skills.add(self.skill)
 
     def tearDown(self):
@@ -395,9 +377,7 @@ class APITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
         self.assertGreater(len(data), 0)
-        frontend_card = next(
-            (card for card in data if card["categoryTitle"] == "Frontend"), None
-        )
+        frontend_card = next((card for card in data if card["categoryTitle"] == "Frontend"), None)
         self.assertIsNotNone(frontend_card)
         self.assertEqual(frontend_card["skills"][0]["name"], "JavaScript")
 
@@ -444,9 +424,7 @@ class TestMessagesViewTests(APITestCase):
 
         # Check admin email
         admin_call_args = mock_send_mail.call_args_list[0][1]
-        self.assertEqual(
-            admin_call_args["subject"], "New message from your portfolio contact form"
-        )
+        self.assertEqual(admin_call_args["subject"], "New message from your portfolio contact form")
         self.assertIn(data["name"], admin_call_args["message"])
         self.assertIn(data["email"], admin_call_args["message"])
         self.assertEqual(admin_call_args["from_email"], None)

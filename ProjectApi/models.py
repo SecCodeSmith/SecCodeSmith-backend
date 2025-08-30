@@ -12,9 +12,7 @@ class ProjectCategory(models.Model):
     """
 
     category_name = models.CharField(max_length=200, unique=True)
-    icon = models.ForeignKey(
-        IconsClass, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    icon = models.ForeignKey(IconsClass, on_delete=models.SET_NULL, null=True, blank=True)
     short = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
@@ -27,9 +25,7 @@ class ProjectCategory(models.Model):
 
 
 class ProjectTechnology(models.Model):
-    icon = models.ForeignKey(
-        IconsClass, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    icon = models.ForeignKey(IconsClass, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=200, unique=True)
 
     def __str__(self):
@@ -46,9 +42,7 @@ class Project(models.Model):
     image = models.ImageField(upload_to="project/")
     category = models.ManyToManyField(ProjectCategory)
     feathered = models.BooleanField(default=False)
-    main_technologies = models.ManyToManyField(
-        ProjectTechnology, related_name="main_technologies"
-    )
+    main_technologies = models.ManyToManyField(ProjectTechnology, related_name="main_technologies")
     github_url = models.URLField(null=True, blank=True)
     demo_url = models.URLField(null=True, blank=True)
     documents_url = models.URLField(null=True, blank=True)
@@ -75,9 +69,7 @@ class ProjectDetail(models.Model):
     end_date = models.DateField(blank=True, null=True)
     role = models.CharField(max_length=100, null=True, blank=True)
     client = models.CharField(max_length=100, default="Internal Project")
-    full_technologies = models.ManyToManyField(
-        ProjectTechnology, related_name="full_technologies", blank=True
-    )
+    full_technologies = models.ManyToManyField(ProjectTechnology, related_name="full_technologies", blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 

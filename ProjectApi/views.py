@@ -34,14 +34,12 @@ class ProjectsEndpoint(APIView):
                     ],
                     "featured": project.feathered,
                     "technologies": [
-                        {"name": tech.name, "icon": tech.icon.class_name}
-                        for tech in project.main_technologies.all()
+                        {"name": tech.name, "icon": tech.icon.class_name} for tech in project.main_technologies.all()
                     ],
                     "github": project.github_url,
                     "demo": project.demo_url,
                     "documentation": project.documents_url,
-                    "project_details": ProjectDetail.objects.get(project=project)
-                    is not None,
+                    "project_details": ProjectDetail.objects.get(project=project) is not None,
                 }
                 for project in projects
             ]
@@ -68,8 +66,7 @@ class ProjectDetailEndpoint(APIView):
                 "category": [cat.category_name for cat in project.category.all()],
                 "featured": project.feathered,
                 "technologies": [
-                    {"name": tech.name, "icon": tech.icon.class_name}
-                    for tech in project.main_technologies.all()
+                    {"name": tech.name, "icon": tech.icon.class_name} for tech in project.main_technologies.all()
                 ],
                 "github": project.github_url,
                 "demo": project.demo_url,
@@ -78,23 +75,13 @@ class ProjectDetailEndpoint(APIView):
                     "descriptions": project_details.full_description.split("\n"),
                     "start_date": project_details.start_date.strftime("%d/%m/%Y"),
                     "end_date": (
-                        project_details.end_date.strftime("%d/%m/%Y")
-                        if project_details.end_date is not None
-                        else None
+                        project_details.end_date.strftime("%d/%m/%Y") if project_details.end_date is not None else None
                     ),
                     "date_format": "%d/%m/%Y",
                     "role": project_details.role,
                     "client": project_details.client,
-                    "key_features": [
-                        feature.name
-                        for feature in KeyFeatures.objects.filter(project=project).all()
-                    ],
-                    "gallery": [
-                        image.image.url
-                        for image in ProjectGallery.objects.filter(
-                            project=project
-                        ).all()
-                    ],
+                    "key_features": [feature.name for feature in KeyFeatures.objects.filter(project=project).all()],
+                    "gallery": [image.image.url for image in ProjectGallery.objects.filter(project=project).all()],
                     "full_tech_stack": [
                         {
                             "name": tech.name,

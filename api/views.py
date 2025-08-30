@@ -34,9 +34,7 @@ class SkillCards(APIView):
         try:
             card = SkillsCard.objects.all()
         except SkillsCard.DoesNotExist:
-            return JsonResponse(
-                {"error": "No skills found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({"error": "No skills found"}, status=status.HTTP_404_NOT_FOUND)
 
         data = [
             {
@@ -74,9 +72,7 @@ class AboutPage(APIView):
                         status=status.HTTP_404_NOT_FOUND,
                     )
         except Lang.DoesNotExist:
-            return JsonResponse(
-                {"error": "Language not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({"error": "Language not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             lang = Lang.objects.get(iso_code=lang_arg)
@@ -92,11 +88,7 @@ class AboutPage(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        professional_journey = (
-            ProfessionalJourney.objects.filter(about=about)
-            .order_by("-end_date", "-start_date")
-            .all()
-        )
+        professional_journey = ProfessionalJourney.objects.filter(about=about).order_by("-end_date", "-start_date").all()
         technical_arsenal = TechnicalArsenal.objects.filter(about=about).all()
         core_value = CoreValue.objects.filter(about=about).all()
         testimonials = Testimonials.objects.filter(about=about).all()
@@ -123,12 +115,7 @@ class AboutPage(APIView):
                 {
                     "icon": item.icon.class_name,
                     "title": item.title,
-                    "skills": [
-                        skill.text
-                        for skill in TechnicalArsenalSkill.objects.filter(
-                            technical_arsenal=item
-                        ).all()
-                    ],
+                    "skills": [skill.text for skill in TechnicalArsenalSkill.objects.filter(technical_arsenal=item).all()],
                 }
                 for item in technical_arsenal
             ],
@@ -172,20 +159,13 @@ class SocialLinksFooter(APIView):
             socials = SocialLinks.objects.filter(footer=True).all()
 
             if not socials or len(socials) == 0:
-                return JsonResponse(
-                    {"error": "No social links found"}, status=status.HTTP_404_NOT_FOUND
-                )
+                return JsonResponse({"error": "No social links found"}, status=status.HTTP_404_NOT_FOUND)
 
-            data = [
-                {"icon": social.icon_class.class_name, "url": social.url}
-                for social in socials
-            ]
+            data = [{"icon": social.icon_class.class_name, "url": social.url} for social in socials]
 
             return JsonResponse(data, safe=False, status=status.HTTP_200_OK)
         except SocialLinks.DoesNotExist:
-            return JsonResponse(
-                {"error": "No social links found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({"error": "No social links found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ContactPage(APIView):
@@ -216,17 +196,12 @@ class ContactPage(APIView):
                     }
                     for link in socials
                 ],
-                "FAQ": [
-                    {"question": element.question, "answer": element.answer}
-                    for element in faq
-                ],
+                "FAQ": [{"question": element.question, "answer": element.answer} for element in faq],
             }
 
             return JsonResponse(data, safe=False, status=status.HTTP_200_OK)
         except Contact.DoesNotExist:
-            return JsonResponse(
-                {"error": "Contact not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return JsonResponse({"error": "Contact not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ContactFormEndpoint(APIView):
@@ -300,10 +275,6 @@ class ContactFormEndpoint(APIView):
                 fail_silently=False,
             )
 
-            return JsonResponse(
-                {"message": "Message created"}, status=status.HTTP_201_CREATED
-            )
+            return JsonResponse({"message": "Message created"}, status=status.HTTP_201_CREATED)
         except IntegrityError:
-            return JsonResponse(
-                {"message": "Bad request"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return JsonResponse({"message": "Bad request"}, status=status.HTTP_400_BAD_REQUEST)

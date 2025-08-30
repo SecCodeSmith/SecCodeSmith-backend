@@ -132,9 +132,7 @@ class Skill(models.Model):
         help_text=_("Name of the skill list (e.g., Programming Languages, Frameworks)"),
     )
 
-    icon_class = models.ForeignKey(
-        IconsClass, related_name="skills", on_delete=models.SET_NULL, null=True
-    )
+    icon_class = models.ForeignKey(IconsClass, related_name="skills", on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = _("Skill List")
@@ -156,9 +154,7 @@ class SkillsCard(models.Model):
         help_text=_("Name of skills card"),
     )
 
-    icon_class = models.ForeignKey(
-        IconsClass, related_name="skills_cards", on_delete=models.SET_NULL, null=True
-    )
+    icon_class = models.ForeignKey(IconsClass, related_name="skills_cards", on_delete=models.SET_NULL, null=True)
     skills = models.ManyToManyField(
         Skill,
     )
@@ -196,27 +192,17 @@ class About(models.Model):
     about_title = models.CharField(_("About Title"), max_length=100)
     sub_title = models.CharField(_("Sub Title"), max_length=100)
     about_text = models.TextField(_("About Text"))
-    image_title = models.CharField(
-        _("Image Title"), max_length=100, default="The Master Behind the Mask"
-    )
+    image_title = models.CharField(_("Image Title"), max_length=100, default="The Master Behind the Mask")
     image = models.ImageField(
         _("About Image"),
     )
-    lang = models.OneToOneField(
-        Lang, on_delete=models.CASCADE, related_name="about_lang"
-    )
-    technical_arsenal_title = models.CharField(
-        _("Technical Arsenal Title"), max_length=100, default="Arsenal of Expertise"
-    )
-    core_value_title = models.CharField(
-        _("Core Value Title"), max_length=100, default="Forging Principles"
-    )
+    lang = models.OneToOneField(Lang, on_delete=models.CASCADE, related_name="about_lang")
+    technical_arsenal_title = models.CharField(_("Technical Arsenal Title"), max_length=100, default="Arsenal of Expertise")
+    core_value_title = models.CharField(_("Core Value Title"), max_length=100, default="Forging Principles")
     professional_journal_title = models.CharField(
         _("Professional Journal Title"), max_length=100, default="The Smith's Journey"
     )
-    testimonials_title = models.CharField(
-        _("Testimonials Title"), max_length=100, default="Tales from the Guild"
-    )
+    testimonials_title = models.CharField(_("Testimonials Title"), max_length=100, default="Tales from the Guild")
 
     class Meta:
         verbose_name = _("About")
@@ -226,9 +212,7 @@ class About(models.Model):
 
     @admin.display
     def image_tag(self):
-        return format_html(
-            '<img src="{}" alt={} height="100" />', self.image.url, self.about_title
-        )
+        return format_html('<img src="{}" alt={} height="100" />', self.image.url, self.about_title)
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
@@ -275,9 +259,7 @@ class TechnicalArsenal(models.Model):
 
     icon = models.ForeignKey(IconsClass, on_delete=models.CASCADE)
     title = models.CharField(_("Technical Arsenal Title"), max_length=100)
-    about = models.ForeignKey(
-        About, on_delete=models.CASCADE, verbose_name=_("Technical Arsenal Skill")
-    )
+    about = models.ForeignKey(About, on_delete=models.CASCADE, verbose_name=_("Technical Arsenal Skill"))
 
     def __str__(self):
         return self.title
@@ -307,9 +289,7 @@ class Testimonials(models.Model):
     email = models.EmailField(_("Email"), max_length=100)
     position = models.CharField(_("Position"), max_length=100)
     text = models.TextField(_("Text"))
-    about = models.ForeignKey(
-        About, on_delete=models.CASCADE, verbose_name=_("Technical Arsenal Skill")
-    )
+    about = models.ForeignKey(About, on_delete=models.CASCADE, verbose_name=_("Technical Arsenal Skill"))
 
 
 class CoreValue(models.Model):
@@ -318,14 +298,10 @@ class CoreValue(models.Model):
     """
 
     title = models.CharField(_("title"), max_length=100)
-    icon = models.ForeignKey(
-        IconsClass, on_delete=models.CASCADE, verbose_name=_("icon")
-    )
+    icon = models.ForeignKey(IconsClass, on_delete=models.CASCADE, verbose_name=_("icon"))
     description = models.TextField(_("description"))
 
-    about = models.ForeignKey(
-        About, on_delete=models.CASCADE, verbose_name=_("Core value about")
-    )
+    about = models.ForeignKey(About, on_delete=models.CASCADE, verbose_name=_("Core value about"))
 
     class Meta:
         verbose_name = _("core value")
