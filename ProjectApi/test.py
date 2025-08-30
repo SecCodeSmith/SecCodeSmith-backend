@@ -32,7 +32,9 @@ class ProjectViewsTest(TestCase):
             name="React",
         )
 
-        image_file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
+        image_file = SimpleUploadedFile(
+            "test.jpg", b"file_content", content_type="image/jpeg"
+        )
 
         self.project = Project.objects.create(
             title="Test Project",
@@ -58,12 +60,18 @@ class ProjectViewsTest(TestCase):
         self.project.main_technologies.add(self.tech1)
         self.project_detail.full_technologies.add(self.tech1, self.tech2)
 
-        self.gallery = ProjectGallery.objects.create(alternative_text="Alt 1", image=image_file, project=self.project)
+        self.gallery = ProjectGallery.objects.create(
+            alternative_text="Alt 1", image=image_file, project=self.project
+        )
 
-        self.feature = KeyFeatures.objects.create(name="Feature 1", project=self.project)
+        self.feature = KeyFeatures.objects.create(
+            name="Feature 1", project=self.project
+        )
 
         self.projects = reverse("projects:projects")
-        self.projects_detail = lambda pk: reverse("projects:project-detail", kwargs={"project_id": pk})
+        self.projects_detail = lambda pk: reverse(
+            "projects:project-detail", kwargs={"project_id": pk}
+        )
         self.cat = reverse("projects:project-category")
 
     def tearDown(self):
@@ -85,8 +93,12 @@ class ProjectViewsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Test Project")
         self.assertEqual(response.data["project_details"]["role"], "Developer")
-        self.assertEqual(response.data["project_details"]["key_features"], ["Feature 1"])
-        self.assertEqual(response.data["project_details"]["full_tech_stack"][0]["name"], "Django")
+        self.assertEqual(
+            response.data["project_details"]["key_features"], ["Feature 1"]
+        )
+        self.assertEqual(
+            response.data["project_details"]["full_tech_stack"][0]["name"], "Django"
+        )
 
     def test_get_project_detail_not_found(self):
         response = self.client.get("/projects/999/")  # Non-existent ID

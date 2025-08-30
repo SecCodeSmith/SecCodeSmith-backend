@@ -23,7 +23,9 @@ class Author(models.Model):
 
     @admin.display
     def image_tag(self):
-        return format_html('<img src="{}" alt="author img" height="100" />', self.image.url)
+        return format_html(
+            '<img src="{}" alt="author img" height="100" />', self.image.url
+        )
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
@@ -95,7 +97,9 @@ class Post(models.Model):
         help_text="A URL-friendly identifier derived from title.",
     )
     title = models.CharField(max_length=200)
-    excerpt = models.TextField(help_text="Short summary of the post (e.g. first 1–2 sentences).")
+    excerpt = models.TextField(
+        help_text="Short summary of the post (e.g. first 1–2 sentences)."
+    )
     image = models.ImageField(
         upload_to="posts/images/",
         null=True,
@@ -114,8 +118,12 @@ class Post(models.Model):
         blank=True,
     )
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="posts")
-    featured = models.BooleanField(default=False, help_text="Mark as featured post (e.g. for homepage slider).")
-    read_time = models.CharField(max_length=20, blank=True, help_text="Estimated read time, e.g. '5 min read'.")
+    featured = models.BooleanField(
+        default=False, help_text="Mark as featured post (e.g. for homepage slider)."
+    )
+    read_time = models.CharField(
+        max_length=20, blank=True, help_text="Estimated read time, e.g. '5 min read'."
+    )
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
     content = models.TextField(help_text="Full HTML or Markdown content of the post.")
 
@@ -160,7 +168,9 @@ class Comment(models.Model):
     content = models.TextField(help_text="Comment text")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    is_public = models.BooleanField(default=True, help_text="Uncheck to hide comment without deleting.")
+    is_public = models.BooleanField(
+        default=True, help_text="Uncheck to hide comment without deleting."
+    )
 
     class Meta:
         ordering = ["created_at"]

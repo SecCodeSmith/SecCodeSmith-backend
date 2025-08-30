@@ -22,7 +22,9 @@ class PostViewsEndpoint(APIView):
         """
 
         if not slug:
-            return JsonResponse({"error": "No post slug provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {"error": "No post slug provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             post = Post.objects.get(slug=slug)
 
@@ -38,7 +40,9 @@ class PostViewsEndpoint(APIView):
                 },
                 "read_time": post.read_time,
                 "publish_at": post.published_at.strftime("%d-%m-%Y"),
-                "tags": [{"name": tag.name, "slug": tag.slug} for tag in post.tags.all()],
+                "tags": [
+                    {"name": tag.name, "slug": tag.slug} for tag in post.tags.all()
+                ],
                 "date": post.published_at.strftime("%d-%m-%Y"),
                 "content": post.content,
                 "author": {
@@ -49,7 +53,9 @@ class PostViewsEndpoint(APIView):
             }
             return JsonResponse(data, status=status.HTTP_200_OK)
         except Post.DoesNotExist:
-            return JsonResponse({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class RelatedPostsViewsEndpoint(APIView):
@@ -60,10 +66,16 @@ class RelatedPostsViewsEndpoint(APIView):
         Get 3 related post for main.
         """
         if not category_slug:
-            return JsonResponse({"error": "No post slug provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {"error": "No post slug provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
 
-            related_posts = (Post.objects.filter(published_at__lte=timezone.now()).filter(category__slug=category_slug))[:3]
+            related_posts = (
+                Post.objects.filter(published_at__lte=timezone.now()).filter(
+                    category__slug=category_slug
+                )
+            )[:3]
 
             data = [
                 {
@@ -77,7 +89,9 @@ class RelatedPostsViewsEndpoint(APIView):
             ]
             return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
         except Post.DoesNotExist:
-            return JsonResponse({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class PostPagesCountEndpoint(APIView):
@@ -99,7 +113,9 @@ class PostPagesCountEndpoint(APIView):
             return JsonResponse({"count": count}, status=status.HTTP_200_OK)
 
         except Post.DoesNotExist:
-            return JsonResponse({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class PostPageViewEndpoint(APIView):
@@ -114,7 +130,9 @@ class PostPageViewEndpoint(APIView):
         filt_json = request.GET.get("filter")
 
         try:
-            posts = Post.objects.filter(published_at__lte=timezone.now()).order_by("-published_at")
+            posts = Post.objects.filter(published_at__lte=timezone.now()).order_by(
+                "-published_at"
+            )
             if filt_json:
                 posts = filter_posts(posts, filt_json)
 
@@ -137,7 +155,10 @@ class PostPageViewEndpoint(APIView):
                         "comments": post.comment_count,
                         "featured": post.featured,
                         "image": post.image.url or "",
-                        "tags": [{"name": tag.name, "slug": tag.slug} for tag in post.tags.all()],
+                        "tags": [
+                            {"name": tag.name, "slug": tag.slug}
+                            for tag in post.tags.all()
+                        ],
                         "category": {
                             "title": post.category.title,
                             "slug": post.category.slug,
@@ -148,7 +169,9 @@ class PostPageViewEndpoint(APIView):
             }
             return JsonResponse(data, status=status.HTTP_200_OK)
         except Post.DoesNotExist:
-            return JsonResponse({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except ValueError:
             return JsonResponse(
                 {"error": "Invalid JSON in filter param"},
@@ -165,7 +188,9 @@ class TagListsEndpoint(APIView):
             data = [{"name": t.name, "slug": t.slug} for t in tag]
             return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
         except Tag.DoesNotExist:
-            return JsonResponse({"error": "not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class BlogCategoriesEndpoint(APIView):
@@ -178,10 +203,14 @@ class BlogCategoriesEndpoint(APIView):
                 {
                     "title": category.title,
                     "slug": category.slug,
-                    "BlogCount": Post.objects.filter(published_at__lt=timezone.now(), category=category).count(),
+                    "BlogCount": Post.objects.filter(
+                        published_at__lt=timezone.now(), category=category
+                    ).count(),
                 }
                 for category in category
             ]
             return JsonResponse(data, status=status.HTTP_200_OK, safe=False)
         except Category.DoesNotExist:
-            return JsonResponse({"error": "not found"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"error": "not found"}, status=status.HTTP_404_NOT_FOUND
+            )

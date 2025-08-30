@@ -16,22 +16,54 @@ from BlogApi.models import Author, Category, Comment, Post, Tag
 from Images.models import Image
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
 class AuthorModelTests(TestCase):
     def test_author_str(self):
-        author = Author.objects.create(name="Jane Doe", email="jane@example.com", bio="Just a test author.")
+        author = Author.objects.create(
+            name="Jane Doe", email="jane@example.com", bio="Just a test author."
+        )
         self.assertEqual(str(author), "Jane Doe")
 
         author.avatar.delete(save=False)
 
     def test_author_fields(self):
-        author = Author.objects.create(name="John Smith", email="john@example.com", bio="")
+        author = Author.objects.create(
+            name="John Smith", email="john@example.com", bio=""
+        )
         self.assertEqual(author.name, "John Smith", msg="Author name should be correct")
-        self.assertEqual(author.email, "john@example.com", msg="Author email should be correct")
+        self.assertEqual(
+            author.email, "john@example.com", msg="Author email should be correct"
+        )
         self.assertEqual(author.bio, "", msg="Author bio should be correct")
 
         author.avatar.delete(save=False)
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
 class CategoryModelTests(TestCase):
     def test_category_str_and_slug_auto_generation(self):
         title = "Test Category"
@@ -51,6 +83,19 @@ class CategoryModelTests(TestCase):
             Category.objects.create(title=title)
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
 class TagModelTests(TestCase):
     def test_tag_str_and_slug_auto_generation(self):
         name = "Django Test"
@@ -69,6 +114,19 @@ class TagModelTests(TestCase):
             Tag.objects.create(name=name)
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
 class PostModelTests(TestCase):
     def setUp(self):
         # Create a single author and category to reuse
@@ -149,8 +207,12 @@ class PostModelTests(TestCase):
         self.assertEqual(post.comment_count, 0)
 
         # Add comments
-        Comment.objects.create(post=post, name="Anna", email="anna@example.com", content="First comment.")
-        Comment.objects.create(post=post, name="Bob", email="bob@example.com", content="Second comment.")
+        Comment.objects.create(
+            post=post, name="Anna", email="anna@example.com", content="First comment."
+        )
+        Comment.objects.create(
+            post=post, name="Bob", email="bob@example.com", content="Second comment."
+        )
         self.assertEqual(post.comment_count, 2)
 
     def test_post_ordering_by_published_at(self):
@@ -196,7 +258,9 @@ class PostModelTests(TestCase):
 
 class CommentModelTests(TestCase):
     def setUp(self):
-        self.author = Author.objects.create(name="Commenter Author", email="commenter@example.com")
+        self.author = Author.objects.create(
+            name="Commenter Author", email="commenter@example.com"
+        )
         self.category = Category.objects.create(title="Comments Category")
         self.post = Post.objects.create(
             title="Post for Comments",
@@ -252,9 +316,13 @@ class CommentModelTests(TestCase):
 )
 class BlogApiPageTests(APITestCase):
     def setUp(self):
-        self.sample_file = SimpleUploadedFile(name="test.jpg", content=b"file_content", content_type="image/jpeg")
+        self.sample_file = SimpleUploadedFile(
+            name="test.jpg", content=b"file_content", content_type="image/jpeg"
+        )
 
-        self.image = Image.objects.create(name="existing", alt="An existing image", image=self.sample_file)
+        self.image = Image.objects.create(
+            name="existing", alt="An existing image", image=self.sample_file
+        )
         self.author = Author.objects.create(
             name="Commenter Author",
             email="commenter@example.com",
@@ -268,7 +336,9 @@ class BlogApiPageTests(APITestCase):
             avatar=self.sample_file,
         )
         # Dates for posts
-        self.sample_date = timezone.make_aware(datetime.strptime("01-01-2000", "%d-%m-%Y"))
+        self.sample_date = timezone.make_aware(
+            datetime.strptime("01-01-2000", "%d-%m-%Y")
+        )
         self.future_date = timezone.now() + timedelta(days=1)
         # Category
         self.category = Category.objects.create(title="Comments Category")
@@ -296,9 +366,13 @@ class BlogApiPageTests(APITestCase):
             "BlogApi:post_page_count", kwargs={"post_per_page": count_post_on_page}
         )
 
-        self.post_page = lambda page: reverse("BlogApi:post-page", kwargs={"page_number": page})
+        self.post_page = lambda page: reverse(
+            "BlogApi:post-page", kwargs={"page_number": page}
+        )
 
-        self.post_view_page = lambda slug: reverse("BlogApi:post", kwargs={"slug": slug})
+        self.post_view_page = lambda slug: reverse(
+            "BlogApi:post", kwargs={"slug": slug}
+        )
 
         self.tags = reverse("BlogApi:blog-tags")
         self.categoryEndpoint = reverse("BlogApi:blog-categories")
@@ -384,9 +458,13 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
             "BlogApi:post_page_count", kwargs={"post_per_page": count_post_on_page}
         )
 
-        self.post_page = lambda page: reverse("BlogApi:post-page", kwargs={"page_number": page})
+        self.post_page = lambda page: reverse(
+            "BlogApi:post-page", kwargs={"page_number": page}
+        )
 
-        self.post_view_page = lambda slug: reverse("BlogApi:post", kwargs={"slug": slug})
+        self.post_view_page = lambda slug: reverse(
+            "BlogApi:post", kwargs={"slug": slug}
+        )
 
         self.tags = reverse("BlogApi:blog-tags")
         self.categoryEndpoint = reverse("BlogApi:blog-categories")

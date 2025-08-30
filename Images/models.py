@@ -19,7 +19,9 @@ class Image(models.Model):
 
     @admin.display
     def image_tag(self):
-        return format_html('<img src="{}" alt={} height="100" />', self.image.url, self.alt)
+        return format_html(
+            '<img src="{}" alt={} height="100" />', self.image.url, self.alt
+        )
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
