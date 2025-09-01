@@ -33,7 +33,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  pr-checks:
+  pr-checks-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -149,7 +149,9 @@ jobs:
               console.log('Failed to post comment:', error.message);
               // Don't fail the workflow if commenting fails
             }
-
+  pr-check-formating:
+    runs-on: ubuntu-latest
+    steps:
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -162,7 +164,9 @@ jobs:
       - name: Check import sorting with isort
         run: |
           isort --check-only --diff .
-
+  pr-sec-check:
+    runs-on: ubuntu-latest
+    steps:
       - name: Security scan with bandit
         run: |
           bandit -r . --severity-level medium
@@ -178,3 +182,5 @@ jobs:
             pip install pip-audit
             pip-audit --desc || echo "Dependency security scan completed with warnings"
           }
+
+
