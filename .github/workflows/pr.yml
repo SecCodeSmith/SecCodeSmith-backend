@@ -95,6 +95,7 @@ jobs:
         pytest --verbose --tb=short --cov=. --cov-report=xml --cov-report=term
 
     - name: Upload coverage reports to Codecov with GitHub Action
+      if: ${{matrix.python-version}} == 3.12.x 
       uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
