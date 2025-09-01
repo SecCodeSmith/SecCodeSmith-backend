@@ -42,8 +42,8 @@ jobs:
     strategy:
       matrix:
         python-version: [3.10.x, 3.11.x, 3.12.x]
-        postgres-version: [16-alpine, 17-alpine]
-        redis-version: [6-alpine, 7-alpine, 8-alpine]
+        postgres-version: [17-alpine]
+        redis-version: [8-alpine]
 
     services:
       postgres:
