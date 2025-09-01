@@ -23,7 +23,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:17-alpine
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -37,7 +37,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:7
+        image: redis:8-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -47,15 +47,15 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -96,9 +96,9 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11.x'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
 
@@ -136,10 +136,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11.x
 
@@ -166,10 +166,10 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11.x
 
@@ -187,7 +187,7 @@ jobs:
       run: |
         # Install compatible versions for safety
         pip install "typer<0.13.0" "safety==2.4.0b2" || pip install "safety<3.0.0"
-        
+
         # Run safety check with fallback to pip-audit
         safety check --json --output safety-report.json || echo "Safety JSON output failed, continuing..."
         safety check || {
