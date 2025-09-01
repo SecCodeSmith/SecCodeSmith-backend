@@ -1,12 +1,3 @@
----
-name: Pull Request
-about: Describe the changes in your pull request
-title: ''
-labels: ''
-assignees: ''
-
----
-
 ## 📋 Description
 Brief description of the changes
 
@@ -31,12 +22,6 @@ Brief description of the changes
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
 - [ ] Any dependent changes have been merged and published in downstream modules
-
-## 🔗 Related Issues
-Fixes #(issue number)
-
-## 📸 Screenshots (if appropriate)
-Add screenshots to help explain your changes
 
 ## 🔍 Additional Notes
 Add any other notes about the pull request here.
