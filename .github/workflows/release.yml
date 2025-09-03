@@ -35,7 +35,7 @@ jobs:
           RELEASE_VERSION=$(echo $BRANCH_NAME | grep -oP 'release/\K[0-9]+\.[0-9]+' || echo "0.1")
 
           # Read current full version or start from release.1
-          BUILD_FILE=".github/workflows/.build"
+          BUILD_FILE=".build"
           if [ -f "$BUILD_FILE" ]; then
             CURRENT_VERSION=$(cat $BUILD_FILE)
             # Extract current release version from stored version
@@ -72,7 +72,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .github/workflows/.build
+          git add .build
           git commit -m "Bump version to ${{ steps.version.outputs.version }}" || exit 0
           git push
 
@@ -296,6 +296,10 @@ jobs:
           echo "### ✅ Completed Steps" >> $GITHUB_STEP_SUMMARY
           echo "- Version bumped to ${{ needs.prepare-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "- Tests passed on Python 3.10, 3.11, 3.12" >> $GITHUB_STEP_SUMMARY
+          echo "- Database migrations verified" >> $GITHUB_STEP_SUMMARY
+          echo "- Code coverage uploaded to Codecov" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker container built and tested" >> $GITHUB_STEP_SUMMARY
+          echo "- Container uploaded to GitHub Container Registry" >> $GITHUB_STEP_SUMMARY
           echo "- Database migrations verified" >> $GITHUB_STEP_SUMMARY
           echo "- Code coverage uploaded to Codecov" >> $GITHUB_STEP_SUMMARY
           echo "- Docker container built and tested" >> $GITHUB_STEP_SUMMARY
