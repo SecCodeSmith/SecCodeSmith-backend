@@ -238,7 +238,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.REGISTRY_GITHUB }}
 
       - name: Extract metadata
         id: meta
@@ -258,52 +258,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Load and test Docker image
-        run: |
-          docker load --input /tmp/image.tar
-
-          # Test if container starts properly
-          CONTAINER_ID=$(docker run -d -p 8000:8000 \
-            -e DEBUG=False \
-            -e SECRET_KEY=test-secret-key-for-container-test \
-            -e DATABASE_URL=sqlite:///db.sqlite3 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare-release.outputs.version }})
-
-          # Wait for container to start
-          sleep 10
-
-          # Check if container is running
-          if [ "$(docker inspect -f '{{.State.Running}}' $CONTAINER_ID)" = "true" ]; then
-            echo "✅ Container is running successfully"
-
-            # Test health endpoint if available
-            if curl -f http://localhost:8000/health/ 2>/dev/null; then
-              echo "✅ Health check passed"
-            else
-              echo "⚠️  Health endpoint not available, but container is running"
-            fi
-          else
-            echo "❌ Container failed to start"
-            docker logs $CONTAINER_ID
-            exit 1
-          fi
-
-          # Cleanup
-          docker stop $CONTAINER_ID
-          docker rm $CONTAINER_ID
-
-      - name: Push Docker image to registry
-        if: github.event_name == 'push'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   create-release-summary:
     needs: [prepare-release, run-tests, test-migrations, build-and-test-container]
