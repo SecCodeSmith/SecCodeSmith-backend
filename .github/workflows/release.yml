@@ -263,8 +263,54 @@ jobs:
     needs: [prepare-release, run-tests, test-migrations, build-and-test-container]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    permissions:
+      contents: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Create Git tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ needs.prepare-release.outputs.version }}" -m "Release v${{ needs.prepare-release.outputs.version }}"
+          git push origin "v${{ needs.prepare-release.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ needs.prepare-release.outputs.version }}"
+          name: "Release v${{ needs.prepare-release.outputs.version }}"
+          body: |
+            ## 🚀 Release v${{ needs.prepare-release.outputs.version }}
+
+            **Release Information:**
+            - **Full Version:** ${{ needs.prepare-release.outputs.version }}
+            - **Release Version:** ${{ needs.prepare-release.outputs.release_version }}
+            - **Build Number:** ${{ needs.prepare-release.outputs.build_number }}
+            - **Branch:** ${GITHUB_REF#refs/heads/}
+
+            **Container Images:**
+            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare-release.outputs.version }}` (full version)
+            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare-release.outputs.release_version }}` (release version)
+            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest`
+
+            **✅ Completed Pipeline Steps:**
+            - ✅ Version bumped to ${{ needs.prepare-release.outputs.version }}
+            - ✅ Tests passed on Python 3.10, 3.11, 3.12
+            - ✅ Database migrations verified
+            - ✅ Code coverage uploaded to Codecov
+            - ✅ Docker container built for multiple architectures (amd64/arm64)
+            - ✅ Container uploaded to GitHub Container Registry
+
+            **🔗 Quick Links:**
+            - [View Container on GitHub Container Registry](https://github.com/SecCodeSmith/SecCodeSmith-backend/pkgs/container/seccodesmith-backend)
+            - [View Source Code](https://github.com/SecCodeSmith/SecCodeSmith-backend/tree/v${{ needs.prepare-release.outputs.version }})
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create release summary
         run: |
           echo "🚀 Release Pipeline Completed Successfully!" >> $GITHUB_STEP_SUMMARY
