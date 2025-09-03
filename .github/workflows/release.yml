@@ -84,10 +84,11 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_DB: backend
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -97,7 +98,7 @@ jobs:
           - 5432:5432
 
       redis:
-        image: redis:7
+        image: redis:7.4
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -130,8 +131,14 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379/0
+          DATABASE_TYPE: pgsql
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_NAME: backend
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: |
           python -m pytest --cov=. --cov-report=xml --cov-report=term-missing -v
 
@@ -150,10 +157,11 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_migrations_db
+          POSTGRES_USER: postgres
+          POSTGRES_DB: backend
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -161,6 +169,17 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+      redis:
+        image: redis:7.4
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
 
     steps:
       - name: Checkout code
@@ -178,7 +197,14 @@ jobs:
 
       - name: Test migrations
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_migrations_db
+          DATABASE_TYPE: pgsql
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_NAME: backend
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: |
           python manage.py migrate --check
           python manage.py makemigrations --check --dry-run
