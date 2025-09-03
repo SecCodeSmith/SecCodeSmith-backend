@@ -195,19 +195,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Test migrations
-        env:
-          DATABASE_TYPE: pgsql
-          DATABASE_HOST: localhost
-          DATABASE_PORT: 5432
-          DATABASE_USER: postgres
-          DATABASE_PASSWORD: postgres
-          DATABASE_NAME: backend
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
+      - name: Set up environment variables
         run: |
-          python manage.py migrate --check
-          python manage.py makemigrations --check --dry-run
+          echo "DJANGO_DEBUG=False" >> $GITHUB_ENV
+          echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> $GITHUB_ENV
+          echo "DATABASE_TYPE=pgsql" >> $GITHUB_ENV
+          echo "DATABASE_USER=postgres" >> $GITHUB_ENV
+          echo "DATABASE_PASSWORD=postgres" >> $GITHUB_ENV
+          echo "DATABASE_HOST=localhost" >> $GITHUB_ENV
+          echo "DATABASE_PORT=5432" >> $GITHUB_ENV
+          echo "DATABASE_NAME=test_backend" >> $GITHUB_ENV
+          echo "REDIS_HOST=localhost" >> $GITHUB_ENV
+          echo "REDIS_PORT=6379" >> $GITHUB_ENV
+          echo "REDIS_DB=0" >> $GITHUB_ENV
+
+      - name: Run migrations
+        run: |
+          python manage.py migrate
+
+      - name: Run Django system checks
+        run: |
+          python manage.py check
+
 
   build-and-test-container:
     needs: [prepare-release, run-tests, test-migrations]
