@@ -205,7 +205,7 @@ jobs:
           echo "DATABASE_PASSWORD=postgres" >> $GITHUB_ENV
           echo "DATABASE_HOST=localhost" >> $GITHUB_ENV
           echo "DATABASE_PORT=5432" >> $GITHUB_ENV
-          echo "DATABASE_NAME=test_backend" >> $GITHUB_ENV
+          echo "DATABASE_NAME=backend" >> $GITHUB_ENV
           echo "REDIS_HOST=localhost" >> $GITHUB_ENV
           echo "REDIS_PORT=6379" >> $GITHUB_ENV
           echo "REDIS_DB=0" >> $GITHUB_ENV
