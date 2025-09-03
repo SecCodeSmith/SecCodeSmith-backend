@@ -47,11 +47,11 @@ jobs:
               echo "Incrementing build number for release $RELEASE_VERSION"
             else
               # Different release version - reset build number to 1
-              BUILD_NUMBER=1
+              BUILD_NUMBER=0
               echo "New release version $RELEASE_VERSION detected (was $CURRENT_RELEASE_VERSION) - resetting build number to 1"
             fi
           else
-            BUILD_NUMBER=1
+            BUILD_NUMBER=0
             echo "No previous version found - starting with build number 1"
           fi
 
