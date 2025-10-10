@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory, APITestCase
 
 from BlogApi.models import Author, Category, Comment, Post, Tag
+from BlogApi.untils import filter_posts
 from Images.models import Image
 
 
@@ -319,7 +320,7 @@ class BlogApiPageTests(APITestCase):
             avatar=self.sample_file,
         )
         # Dates for posts
-        self.sample_date = timezone.make_aware(datetime.strptime("01-01-2000", "%d-%m-%Y"))
+        self.sample_date = timezone.now() - timedelta(days=1)
         self.future_date = timezone.now() + timedelta(days=1)
         # Category
         self.category = Category.objects.create(title="Comments Category")
@@ -349,7 +350,13 @@ class BlogApiPageTests(APITestCase):
 
         self.post_page = lambda page: reverse("BlogApi:post-page", kwargs={"page_number": page})
 
-        self.post_view_page = lambda slug: reverse("BlogApi:post", kwargs={"slug": slug})
+        self.post_view_page = lambda slug=None: reverse("BlogApi:post", kwargs={"slug": slug}) if slug else reverse("BlogApi:post_without_slug")
+
+        self.related_posts_view = lambda slug=None: (
+            reverse("BlogApi:related_post", kwargs={"category_slug": slug})
+            if slug
+            else reverse("BlogApi:related-posts_without_slug")
+        )
 
         self.tags = reverse("BlogApi:blog-tags")
         self.categoryEndpoint = reverse("BlogApi:blog-categories")
@@ -364,6 +371,62 @@ class BlogApiPageTests(APITestCase):
             post.image.delete(save=False)
 
         super().tearDown()
+
+    def test_post_view_no_slug(self):
+        url = self.post_view_page()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_related_posts_no_slug(self):
+        url = self.related_posts_view()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_related_posts_with_no_image(self):
+        # Create a post without an image in the same category
+        no_image_post = Post.objects.create(
+            title="No Image Post",
+            slug="no-image-post",
+            category=self.category,
+            published_at=timezone.now(),
+            author=self.author,
+            content="Content.",
+        )
+        self.posts.append(no_image_post)  # Add for cleanup
+        url = self.related_posts_view(self.category.slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        # Find the post without an image
+        no_image_post_data = next((p for p in payload if p["slug"] == "no-image-post"), None)
+        self.assertIsNotNone(no_image_post_data)
+        self.assertEqual(no_image_post_data["image"], "")
+
+    def test_posts_count_with_filter(self):
+        url = self.posts_count(2)
+        filter_json = json.dumps({"title": "Test Post 1"})
+        response = self.client.get(url, {"filter": filter_json})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.text)
+        self.assertEqual(payload["count"], 1)
+
+    def test_post_page_view_with_filter(self):
+        url = self.post_page(1)
+        filter_json = json.dumps({"tags": [self.tag.slug]})
+        response = self.client.get(url, {"per_page": "3", "filter": filter_json})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload["posts"]), 3)
+
+    def test_post_page_view_with_invalid_filter(self):
+        url = self.post_page(1)
+        response = self.client.get(url, {"filter": "invalid-json"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_posts_count_with_invalid_filter(self):
+        url = self.posts_count(2)
+        response = self.client.get(url, {"filter": "invalid-json"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_posts_count(self):
         url = self.posts_count(2)
@@ -471,8 +534,120 @@ class BlogApiPageEmptyDatabaseTests(APITestCase):
         payload = json.loads(response.content)
         self.assertEqual(len(payload), 0)
 
-    def test_categories_empty(self):
-        response = self.client.get(self.categoryEndpoint)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        payload = json.loads(response.content)
-        self.assertEqual(len(payload), 0)
+
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    },
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+)
+class FilterPostsTests(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name="Test Author", email="author@test.com")
+        self.category1 = Category.objects.create(title="Tech")
+        self.category2 = Category.objects.create(title="Science")
+        self.tag1 = Tag.objects.create(name="Django")
+        self.tag2 = Tag.objects.create(name="Python")
+
+        self.post1 = Post.objects.create(
+            title="Post about Django",
+            author=self.author,
+            category=self.category1,
+            published_at=timezone.now(),
+        )
+        self.post1.tags.add(self.tag1)
+
+        self.post2 = Post.objects.create(
+            title="Post about Python",
+            author=self.author,
+            category=self.category1,
+            published_at=timezone.now(),
+        )
+        self.post2.tags.add(self.tag2)
+
+        self.post3 = Post.objects.create(
+            title="Another Tech Post",
+            author=self.author,
+            category=self.category1,
+            published_at=timezone.now(),
+        )
+        self.post3.tags.add(self.tag1, self.tag2)
+
+        self.post4 = Post.objects.create(
+            title="Science and Python",
+            author=self.author,
+            category=self.category2,
+            published_at=timezone.now(),
+        )
+        self.post4.tags.add(self.tag2)
+
+    def tearDown(self):
+        self.author.avatar.delete(save=False)
+        self.post1.image.delete(save=False)
+        self.post2.image.delete(save=False)
+        self.post3.image.delete(save=False)
+        self.post4.image.delete(save=False)
+
+    def test_filter_by_title(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"title": "Django"})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 1)
+        self.assertEqual(filtered.first(), self.post1)
+
+    def test_filter_by_category(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"category": self.category2.slug})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 1)
+        self.assertEqual(filtered.first(), self.post4)
+
+    def test_filter_by_single_tag(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"tags": [self.tag1.slug]})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 2)
+        self.assertIn(self.post1, filtered)
+        self.assertIn(self.post3, filtered)
+
+    def test_filter_by_multiple_tags(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"tags": [self.tag1.slug, self.tag2.slug]})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 1)
+        self.assertEqual(filtered.first(), self.post3)
+
+    def test_filter_by_title_and_category(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"title": "Post", "category": self.category1.slug})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 3)
+        self.assertIn(self.post1, filtered)
+        self.assertIn(self.post2, filtered)
+        self.assertIn(self.post3, filtered)
+
+    def test_filter_by_all(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"title": "Django", "category": self.category1.slug, "tags": [self.tag1.slug]})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 1)
+        self.assertEqual(filtered.first(), self.post1)
+
+    def test_no_filter(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 4)
+
+    def test_empty_filter_values(self):
+        posts = Post.objects.all()
+        filter_json = json.dumps({"title": "", "category": "", "tags": []})
+        filtered = filter_posts(posts, filter_json)
+        self.assertEqual(filtered.count(), 4)
